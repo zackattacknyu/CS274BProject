@@ -59,11 +59,18 @@
 \centerline{Homer Strong, ?????????}
 \centerline{CS 274B: Spring 2016}
 
+
 \section*{Data Set}
+
+For my project, I will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. There is also a target $y$ value for that pixel obtained via radar data. 
+
+\begin{lstlisting}
+http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
+\end{lstlisting}
 
 \section*{Graphical Models}
 
-\section*{Goal}
+In order to predict precipitation, I will use a Markov Model where each $x_i$ is conditioned on each $y_i$. Each $y_i$ is conditioned on its neighbors. In this way, neighboring pixels will be likely to have similar values. 
 
 
 
