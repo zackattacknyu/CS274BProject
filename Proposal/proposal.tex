@@ -54,24 +54,30 @@
 
 \begin{document}
 
-\centerline{\Large Project Proposal}
+\centerline{\Large Project Proposal: Graphical models for precipitation}
 \centerline{Zachary DeStefano, 15247592}
-\centerline{Homer Strong, ?????????}
+\centerline{Homer Strong, 94767004}
 \centerline{CS 274B: Spring 2016}
 
+\section*{Introduction}
+Precipitation plays a major role in many natural and societal systems, but direct observations of precipitation are not available for all areas. Remote sensing platforms such as satellites provide estimates of temperature via measurements of elecromagnetic radiation. Temperature and precipitation are closely related due to the physical mechanisms which govern precipitation. Furthermore there is strong spatial structure in both temperature and precipitation, so the ability to describe spatial dependence is highly desirable for models of precipitation. We consider modelling precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. Graphical models provide a natural approach for taking into account the spatial dependencies inherent in patterns of precipitation.
 
-\section*{Data Set}
-
-For my project, I will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. There is also a target $y$ value for that pixel obtained via radar data. 
+\section*{Precipitation dataset}
+We will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temperal resolution under consideration is the finest available, 30 minutes.
 
 \begin{lstlisting}
 http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
 \end{lstlisting}
 
-\section*{Graphical Models}
+\section*{Graphical models}
+In order to predict precipitation, we will use a Markov Model where each $x_i$ is conditioned on each $y_i$. Each $y_i$ is conditioned on its neighbors. In this way, neighboring pixels will be likely to have similar values.
 
-In order to predict precipitation, I will use a Markov Model where each $x_i$ is conditioned on each $y_i$. Each $y_i$ is conditioned on its neighbors. In this way, neighboring pixels will be likely to have similar values. 
+questions:
+how to model continuous relationship?
+how to perform model selection?
+model occurrence?
 
-
+\section*{Expected outcomes}
+The goal for this project is to evaluate several graphical models for precipitation given temperature over a grid of pixels covering the western United States. We intend to focus on the spatial structure, so no temporality will be included in these models. The selected model should accurately predict precipitation using temperature data.
 
 \end{document}
