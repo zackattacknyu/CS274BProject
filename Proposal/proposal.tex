@@ -57,6 +57,7 @@
 \centerline{\Large Project Proposal: Graphical models for precipitation}
 \centerline{Zachary DeStefano, 15247592}
 \centerline{Homer Strong, 94767004}
+\centerline{Disi Ji, 14242728}
 \centerline{CS 274B: Spring 2016}
 
 \section*{Introduction}
@@ -73,9 +74,12 @@ http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
 In order to predict precipitation, we will use a Markov Model where each $x_i$ is conditioned on each $y_i$. Each $y_i$ is conditioned on its neighbors. In this way, neighboring pixels will be likely to have similar values.
 
 questions:
-how to model continuous relationship?
-how to perform model selection?
-model occurrence?
+\begin{itemize}
+\item {\bf what is $x$ and $y$?}
+\item how to model continuous relationship?
+\item how to perform model selection?
+\item model occurrence?
+\end{itemize}
 
 \section*{Expected outcomes}
 The goal for this project is to evaluate several graphical models for precipitation given temperature over a grid of pixels covering the western United States. We intend to focus on the spatial structure, so no temporality will be included in these models. The selected model should accurately predict precipitation using temperature data.
