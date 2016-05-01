@@ -12,6 +12,7 @@ nvals = 2;
 
 yFiles = dir('projectData/ytarget1209*');
 xFiles = dir('projectData/xdata1209*');
+ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
@@ -26,13 +27,17 @@ N = length(trialInds);
 x = cell(1,N);
 y = cell(1,N);
 
+ccsY = cell(1,N);
+
 for n = 1:N
+    fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
     fileI = trialInds(n);
     load(strcat('projectData/',xFiles(fileI).name))
     x{n} = xdata;
     load(strcat('projectData/',yFiles(fileI).name))
     y{n} = ytarget;
-    fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
+    load(strcat('projectData/',ccsFiles(fileI).name))
+    ccsY{n} = ccspred;
 end
 
 
@@ -40,6 +45,7 @@ feats = cell(N,1);
 labels = cell(N,1);
 models = cell(N,1);
 precipImages = cell(N,1);
+ccsLabels = cell(N,1);
 
 for n = 1:N
     curFeats = x{n};
@@ -55,10 +61,21 @@ for n = 1:N
     curLabelsUse(curY>=1)=2;
     curLabelsUse(curFeats(:,:,1)<=0)=0;
     
+    curccs = ccsY{n};
+    curLabelsUseCCS = zeros(sizr,sizc);
+    %NOTE: IN JGMT, 0 MEANS UNLABELLED. 
+    % THUS 1 WILL MEAN NO RAIN
+    % AND 2 WILL MEAN RAIN
+    curLabelsUseCCS(curccs<1)=1;
+    curLabelsUseCCS(curccs<0)=0;
+    curLabelsUseCCS(curccs>=1)=2;
+    curLabelsUseCCS(curFeats(:,:,1)<=0)=0;
+    
     imageY = curY;
     imageY(curY<0)=0;
     precipImages{n} = imageY;
     
+    ccsLabels{n} = curLabelsUseCCS;
     labels{n} = curLabelsUse;
     models{n} = gridmodel(sizr,sizc,2);
     
@@ -105,6 +122,7 @@ close all
 E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
+CCS = zeros(1,length(feats_test));
 for n=3:4%1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
 
@@ -115,12 +133,15 @@ for n=3:4%1:length(feats_test)
     % upsample predicted images to full resolution
     curTargetLabels = labels_test{n};
     testPixels = find(curTargetLabels>0);
+    CCS(n) = sum( ccsLabels{n}(testPixels)~=labels_test{n}(testPixels));
     E(n) = sum( x_pred(testPixels)~=labels_test{n}(testPixels));
     Base(n) = length(find(labels_test{n}(testPixels)>1));
     T(n) = numel(testPixels);
     
+    fprintf('Stats for Time %f\n',n);
     fprintf('Current pixelwise error: %f \n',E(n)/T(n));
     fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
+    fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
 
     
     x_predDisp = x_pred; 
@@ -162,3 +183,4 @@ for n=3:4%1:length(feats_test)
 end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('baseline error: %f \n',sum(Base)/sum(T))
+fprintf('CCS error: %f \n',sum(CCS)/sum(T))
