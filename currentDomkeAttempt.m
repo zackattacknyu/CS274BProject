@@ -7,20 +7,20 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-yFiles = dir('projectData/ytarget1109*');
-xFiles = dir('projectData/xdata1109*');
+%yFiles = dir('projectData/ytarget1109*');
+%xFiles = dir('projectData/xdata1109*');
 
-%yFiles = dir('projectData/ytarget1209*');
-%xFiles = dir('projectData/xdata1209*');
+yFiles = dir('projectData/ytarget1209*');
+xFiles = dir('projectData/xdata1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 150;
+numRandInds = 10;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
 
-addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
+%addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
 
 x = cell(1,N);
@@ -82,13 +82,13 @@ options.maxiter     = 1000;
 options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
-
+%%
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 
 save('currentDomkeResults2')
+%%
 
-%{
 
 feats_test=feats;
 efeats_test=efeats;
@@ -96,13 +96,15 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults');
+%load('currentDomkeResults');
+load('domkeResults2','p');
 
-
+%%
 fprintf('get the marginals for test images...\n');
 close all
 E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
+Base = zeros(1,length(feats_test));
 for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
 
@@ -114,8 +116,13 @@ for n=1:length(feats_test)
     curTargetLabels = labels_test{n};
     testPixels = find(curTargetLabels>0);
     E(n) = sum( x_pred(testPixels)~=labels_test{n}(testPixels));
+    Base(n) = length(find(labels_test{n}(testPixels)>1));
     T(n) = numel(testPixels);
+    
+    fprintf('Current pixelwise error: %f \n',E(n)/T(n));
+    fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
 
+    %{
     x_predDisp = x_pred; 
     x_predDisp(curTargetLabels<=0)=0;
     figure
@@ -125,12 +132,12 @@ for n=1:length(feats_test)
     imagesc(precipImages_test{n}); colorbar;
     subplot(1,3,3)
     imagesc(labels_test{n}); colorbar;
-
     drawnow
+    %}
 end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 
-
+%{
 
     fig = figure;
     imagesc(reshape(label_pred,500,750))
