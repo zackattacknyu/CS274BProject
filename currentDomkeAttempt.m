@@ -105,7 +105,7 @@ close all
 E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
-for n=1:length(feats_test)
+for n=3:4%1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
 
     
@@ -122,29 +122,43 @@ for n=1:length(feats_test)
     fprintf('Current pixelwise error: %f \n',E(n)/T(n));
     fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
 
-    %{
+    
     x_predDisp = x_pred; 
-    x_predDisp(curTargetLabels<=0)=0;
+    x_predDisp(curTargetLabels<=0)=-1;
+    x_predDisp(x_predDisp<=1)=0;
+    
+    labelsDisp = labels_test{n};
+    labelsDisp(curTargetLabels<=0)=-1;
+    labelsDisp(labelsDisp<=1)=0;
+    
     figure
-    subplot(1,3,1)
-    imagesc(x_predDisp); colorbar;
-    subplot(1,3,2)
-    imagesc(precipImages_test{n}); colorbar;
-    subplot(1,3,3)
-    imagesc(labels_test{n}); colorbar;
-    drawnow
-    %}
-end
-fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
-
-%{
-
-    fig = figure;
-    imagesc(reshape(label_pred,500,750))
+    subplot(1,2,1)
+    imagesc(labelsDisp);
+    title('Target Precipitation Image');
     colormap([1 1 1;0.8 0.8 0.8;jet(20)])
     caxis([-1 20]) 
     drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
     colorbar('vertical')
-    %fileNm = ['sepOct2012PngFiles/NEWSINGLE_J' num2str(JVALUE) 'rf5_time' num2str(i) '_Iter' num2str(jj) 'Map.png'];
-    %print(fig,fileNm,'-dpng');
-%}
+    
+    subplot(1,2,2)
+    imagesc(x_predDisp);
+    title('Predicted Precipitation Image');
+    colormap([1 1 1;0.8 0.8 0.8;jet(20)])
+    caxis([-1 20]) 
+    drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+    colorbar('vertical')
+    drawnow
+    
+    %{
+    subplot(1,3,2)
+    imagesc(precipImages_test{n});
+    colormap([1 1 1;0.8 0.8 0.8;jet(20)])
+    caxis([-1 20]) 
+    drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+    colorbar('vertical')
+    %}
+    
+    
+end
+fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
+fprintf('baseline error: %f \n',sum(Base)/sum(T))
