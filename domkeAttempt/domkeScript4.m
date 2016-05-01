@@ -13,6 +13,7 @@ xFiles = dir('projectData/xdata1109*');
 totalN = length(xFiles);
 trialInds = 1:totalN;
 N = length(trialInds);
+feats{n}  = featurize_im(ims{n},feat_params);
 
 addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
