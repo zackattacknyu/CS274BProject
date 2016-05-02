@@ -7,17 +7,17 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 10;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -69,13 +69,14 @@ for n = 1:N
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
 end
 
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
-%edge_params = {{'const'},{'pairtypes'}};
+%edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+edge_params = {{'const'},{'pairtypes'}};
 fprintf('computing edge features...\n')
 efeats = cell(N,1);
 for n=1:N
     %efeats{n} = edgeify_im(precipImages{n},edge_params,models{n}.pairs,models{n}.pairtype);
-    efeats{n} = edgeify_im(x{n}(:,:,1),edge_params,models{n}.pairs,models{n}.pairtype);
+    %efeats{n} = edgeify_im(x{n}(:,:,1),edge_params,models{n}.pairs,models{n}.pairtype);
+    efeats{n} = edgeify_im(x{n}(:,:,2),edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
 loss_spec = 'trunc_cl_trwpll_5';
@@ -93,18 +94,18 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults5_withAllEdgeFeats','p')
+save('currentDomkeResults5_withSomeEdgeFeats2','p')
 %%
 
-
+%{
 feats_test=feats;
 efeats_test=efeats;
 models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults5','p');
-%load('domkeResults2','p');
+%load('currentDomkeResults');
+load('currentDomkeResults5_withSomeEdgeFeats','p');
 
 
 fprintf('get the marginals for test images...\n');
@@ -114,8 +115,8 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 for n=1:length(feats_test)
-    %[b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
-    [b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
+    [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
+
     
     [~,x_pred] = max(b_i,[],1);
     x_pred = reshape(x_pred,sizr,sizc);
@@ -135,13 +136,13 @@ for n=1:length(feats_test)
 
     
     x_predDisp = x_pred; 
-    x_predDisp(curTargetLabels<=1)=-1;
-    x_predDisp(x_pred<=2)=0;
+    x_predDisp(curTargetLabels<=1)=2;
+    x_predDisp(x_pred==2)=0;
     x_predDisp(x_pred>=3)=10;
     
     labelsDisp = labels_test{n};
-    labelsDisp(curTargetLabels<=1)=-1;
-    labelsDisp(labels_test{n}<=2)=0;
+    labelsDisp(curTargetLabels<=1)=2;
+    labelsDisp(labels_test{n}==2)=0;
     labelsDisp(labels_test{n}>=3)=10;
     
     figure
@@ -176,3 +177,4 @@ end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
+%}

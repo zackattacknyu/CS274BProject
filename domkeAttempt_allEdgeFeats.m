@@ -17,7 +17,7 @@ ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 3;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -103,7 +103,7 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults5','p');
+load('currentDomkeResults5_withAllEdgeFeats','p');
 %load('domkeResults2','p');
 
 
@@ -114,8 +114,8 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 for n=1:length(feats_test)
-    %[b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
-    [b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
+    [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
+
     
     [~,x_pred] = max(b_i,[],1);
     x_pred = reshape(x_pred,sizr,sizc);
@@ -137,12 +137,12 @@ for n=1:length(feats_test)
     x_predDisp = x_pred; 
     x_predDisp(curTargetLabels<=1)=-1;
     x_predDisp(x_pred<=2)=0;
-    x_predDisp(x_pred>=3)=10;
+    x_predDisp(x_pred>=3)=5;
     
     labelsDisp = labels_test{n};
     labelsDisp(curTargetLabels<=1)=-1;
     labelsDisp(labels_test{n}<=2)=0;
-    labelsDisp(labels_test{n}>=3)=10;
+    labelsDisp(labels_test{n}>=3)=5;
     
     figure
     subplot(1,2,1)

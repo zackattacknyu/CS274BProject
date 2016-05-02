@@ -52,30 +52,35 @@ for n = 1:N
     curFeats = x{n};
     feats{n} = reshape(x{n},sizr*sizc,13);
     
-    %TEST FEATURES
-    tempFeat = feats{n}(:,1); 
-    tempCol = zeros(sizr*sizc,1);
-    tempCol(tempFeat>1)=1;
-    feats{n} = [feats{n} ones(sizr*sizc,1) tempCol];
+    curY = y{n};
+    curLabelsUse = zeros(sizr,sizc);
+    %NOTE: IN JGMT, 0 MEANS UNLABELLED. 
+    % THUS 1 WILL MEAN NO RAIN
+    % AND 2 WILL MEAN RAIN
+    curLabelsUse(curY<1)=1;
+    curLabelsUse(curY<0)=0;
+    curLabelsUse(curY>=1)=2;
+    curLabelsUse(curFeats(:,:,1)<=0)=0;
     
-    imageY = y{n};
-    imageY(imageY<0)=0;
+    curccs = ccsY{n};
+    curLabelsUseCCS = zeros(sizr,sizc);
+    %NOTE: IN JGMT, 0 MEANS UNLABELLED. 
+    % THUS 1 WILL MEAN NO RAIN
+    % AND 2 WILL MEAN RAIN
+    curLabelsUseCCS(curccs<1)=1;
+    curLabelsUseCCS(curccs<0)=0;
+    curLabelsUseCCS(curccs>=1)=2;
+    curLabelsUseCCS(curFeats(:,:,1)<=0)=0;
+    
+    imageY = curY;
+    imageY(curY<0)=0;
     precipImages{n} = imageY;
     
-    ccsLabels{n} = getLabelsFromY(ccsY{n},curFeats(:,:,1));
-    labels{n} = getLabelsFromY(y{n},curFeats(:,:,1));
-    models{n} = gridmodel(sizr,sizc,3);
+    ccsLabels{n} = curLabelsUseCCS;
+    labels{n} = curLabelsUse;
+    models{n} = gridmodel(sizr,sizc,2);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
-end
-
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
-%edge_params = {{'const'},{'pairtypes'}};
-fprintf('computing edge features...\n')
-efeats = cell(N,1);
-for n=1:N
-    %efeats{n} = edgeify_im(precipImages{n},edge_params,models{n}.pairs,models{n}.pairtype);
-    efeats{n} = edgeify_im(x{n}(:,:,1),edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
 loss_spec = 'trunc_cl_trwpll_5';
@@ -90,11 +95,11 @@ options.reg         = 1e-4;
 options.opt_display = 0;
 %%
 fprintf('training the model (this is slow!)...\n')
-p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
-%p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
+p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults5_withAllEdgeFeats','p')
+save('currentDomkeResults4','-v7.3')
 %%
+
 
 
 feats_test=feats;
@@ -103,9 +108,8 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults5','p');
+load('currentDomkeResults4','p');
 %load('domkeResults2','p');
-
 
 fprintf('get the marginals for test images...\n');
 close all
@@ -114,18 +118,18 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 for n=1:length(feats_test)
-    %[b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     [b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
+
     
     [~,x_pred] = max(b_i,[],1);
     x_pred = reshape(x_pred,sizr,sizc);
 
     % upsample predicted images to full resolution
     curTargetLabels = labels_test{n};
-    testPixels = find(curTargetLabels>1);
+    testPixels = find(curTargetLabels>0);
     CCS(n) = sum( ccsLabels{n}(testPixels)~=labels_test{n}(testPixels));
     E(n) = sum( x_pred(testPixels)~=labels_test{n}(testPixels));
-    Base(n) = length(find(labels_test{n}(testPixels)>2));
+    Base(n) = length(find(labels_test{n}(testPixels)>1));
     T(n) = numel(testPixels);
     
     fprintf('Stats for Time %f\n',n);
@@ -135,15 +139,14 @@ for n=1:length(feats_test)
 
     
     x_predDisp = x_pred; 
-    x_predDisp(curTargetLabels<=1)=-1;
-    x_predDisp(x_pred<=2)=0;
-    x_predDisp(x_pred>=3)=10;
+    x_predDisp(curTargetLabels<=0)=-1;
+    x_predDisp(x_predDisp<=1)=0;
     
     labelsDisp = labels_test{n};
-    labelsDisp(curTargetLabels<=1)=-1;
-    labelsDisp(labels_test{n}<=2)=0;
-    labelsDisp(labels_test{n}>=3)=10;
+    labelsDisp(curTargetLabels<=0)=-1;
+    labelsDisp(labelsDisp<=1)=0;
     
+    %{
     figure
     subplot(1,2,1)
     imagesc(labelsDisp);
@@ -161,6 +164,7 @@ for n=1:length(feats_test)
     drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
     colorbar('vertical')
     drawnow
+    %}
     
     %{
     subplot(1,3,2)
@@ -176,3 +180,4 @@ end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
+
