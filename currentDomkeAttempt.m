@@ -17,7 +17,7 @@ ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 4;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -55,7 +55,7 @@ for n = 1:N
     %TEST FEATURES
     tempFeat = feats{n}(:,1); 
     tempCol = zeros(sizr*sizc,1);
-    tempCol(tempFeat>1)=1;
+    tempCol(tempFeat<1)=1;
     feats{n} = [feats{n} ones(sizr*sizc,1) tempCol];
     
     imageY = y{n};
@@ -64,7 +64,7 @@ for n = 1:N
     
     ccsLabels{n} = getLabelsFromY(ccsY{n},curFeats(:,:,1));
     labels{n} = getLabelsFromY(y{n},curFeats(:,:,1));
-    models{n} = gridmodel(sizr,sizc,3);
+    models{n} = gridmodel(sizr,sizc,2);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
 end
@@ -93,7 +93,7 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults5_withAllEdgeFeats','p')
+save('currentDomkeResults6','p')
 %%
 
 
@@ -103,7 +103,7 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults5','p');
+load('currentDomkeResults6','p');
 %load('domkeResults2','p');
 
 
@@ -114,18 +114,23 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 for n=1:length(feats_test)
-    %[b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
-    [b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
+    [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
+    %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
     [~,x_pred] = max(b_i,[],1);
     x_pred = reshape(x_pred,sizr,sizc);
 
     % upsample predicted images to full resolution
     curTargetLabels = labels_test{n};
-    testPixels = find(curTargetLabels>1);
-    CCS(n) = sum( ccsLabels{n}(testPixels)~=labels_test{n}(testPixels));
-    E(n) = sum( x_pred(testPixels)~=labels_test{n}(testPixels));
-    Base(n) = length(find(labels_test{n}(testPixels)>2));
+    %testPixels = find(curTargetLabels>1);
+    testPixels = find(feats{n}(:,1)>0);
+    ccsResults = ccsLabels{n}(testPixels);
+    x_pred2 = x_pred';
+    xpredResults = x_pred2(testPixels);
+    comparisonLabels = labels_test{n}(testPixels);
+    CCS(n) = sum( ccsResults~=comparisonLabels);
+    E(n) = sum( xpredResults~=comparisonLabels);
+    Base(n) = sum( ones(size(comparisonLabels))~=comparisonLabels);
     T(n) = numel(testPixels);
     
     fprintf('Stats for Time %f\n',n);
@@ -135,14 +140,12 @@ for n=1:length(feats_test)
 
     
     x_predDisp = x_pred; 
-    x_predDisp(curTargetLabels<=1)=-1;
-    x_predDisp(x_pred<=2)=0;
-    x_predDisp(x_pred>=3)=10;
+    x_predDisp(x_pred<=1)=0;
+    x_predDisp(x_pred>=2)=5;
     
-    labelsDisp = labels_test{n};
-    labelsDisp(curTargetLabels<=1)=-1;
-    labelsDisp(labels_test{n}<=2)=0;
-    labelsDisp(labels_test{n}>=3)=10;
+    labelsDisp = curTargetLabels;
+    labelsDisp(curTargetLabels<=1)=0;
+    labelsDisp(labels_test{n}>=2)=5;
     
     figure
     subplot(1,2,1)
@@ -176,3 +179,4 @@ end
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
+%}
