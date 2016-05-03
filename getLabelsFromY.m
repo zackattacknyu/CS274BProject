@@ -9,8 +9,8 @@ curLabelsUse = ones(sizr,sizc);
 % AND 2 WILL MEAN NO RAIN
 %   AND 3 WILL MEAN RAIN
 
-curLabelsUse(curY<1)=1;
-curLabelsUse(curY>=1)=2;
+curLabelsUse(curY<1)=2;
+curLabelsUse(curY>=1)=3;
 curLabelsUse(curTempMap<=0)=1;
 
 end

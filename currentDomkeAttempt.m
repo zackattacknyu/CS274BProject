@@ -17,7 +17,7 @@ ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 4;
+numRandInds = 3;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -64,7 +64,7 @@ for n = 1:N
     
     ccsLabels{n} = getLabelsFromY(ccsY{n},curFeats(:,:,1));
     labels{n} = getLabelsFromY(y{n},curFeats(:,:,1));
-    models{n} = gridmodel(sizr,sizc,2);
+    models{n} = gridmodel(sizr,sizc,3);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
 end
@@ -75,7 +75,7 @@ fprintf('computing edge features...\n')
 efeats = cell(N,1);
 for n=1:N
     %efeats{n} = edgeify_im(precipImages{n},edge_params,models{n}.pairs,models{n}.pairtype);
-    efeats{n} = edgeify_im(x{n}(:,:,1),edge_params,models{n}.pairs,models{n}.pairtype);
+    efeats{n} = edgeify_im(x{n}(:,:,2),edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
 loss_spec = 'trunc_cl_trwpll_5';
@@ -93,7 +93,7 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults6','p')
+save('currentDomkeResults7','p')
 %%
 
 
@@ -103,7 +103,7 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults6','p');
+load('currentDomkeResults7','p');
 %load('domkeResults2','p');
 
 
@@ -125,12 +125,11 @@ for n=1:length(feats_test)
     %testPixels = find(curTargetLabels>1);
     testPixels = find(feats{n}(:,1)>0);
     ccsResults = ccsLabels{n}(testPixels);
-    x_pred2 = x_pred';
-    xpredResults = x_pred2(testPixels);
+    xpredResults = x_pred(testPixels);
     comparisonLabels = labels_test{n}(testPixels);
     CCS(n) = sum( ccsResults~=comparisonLabels);
     E(n) = sum( xpredResults~=comparisonLabels);
-    Base(n) = sum( ones(size(comparisonLabels))~=comparisonLabels);
+    Base(n) = sum( ones(size(comparisonLabels)).*2~=comparisonLabels);
     T(n) = numel(testPixels);
     
     fprintf('Stats for Time %f\n',n);
@@ -140,12 +139,14 @@ for n=1:length(feats_test)
 
     
     x_predDisp = x_pred; 
-    x_predDisp(x_pred<=1)=0;
-    x_predDisp(x_pred>=2)=5;
+    %x_predDisp(curTargetLabels<=1)=-1;
+    x_predDisp(x_pred<=2)=0;
+    x_predDisp(x_pred>=3)=2;
     
     labelsDisp = curTargetLabels;
-    labelsDisp(curTargetLabels<=1)=0;
-    labelsDisp(labels_test{n}>=2)=5;
+    %labelsDisp(curTargetLabels<=1)=-1;
+    labelsDisp(curTargetLabels<=2)=0;
+    labelsDisp(labels_test{n}>=3)=2;
     
     figure
     subplot(1,2,1)
