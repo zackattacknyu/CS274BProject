@@ -17,8 +17,12 @@ ccsFiles = dir('projectData/ccspred1109*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 20;
-trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+numRandInds = 100;
+%trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+
+load('highestPrecipInds1109');
+trialInds = highestPrecipInds(1:numRandInds);
+
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
 
@@ -29,6 +33,7 @@ x = cell(1,N);
 y = cell(1,N);
 
 ccsY = cell(1,N);
+curSum = zeros(1,N);
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -37,11 +42,20 @@ for n = 1:N
     x{n} = xdata;
     load(strcat('projectData/',yFiles(fileI).name))
     y{n} = ytarget;
+    %{
+    yBin = ytarget;
+    yBin(ytarget<1)=0;
+    yBin(ytarget>=1)=1;
+    curSum(n) = sum(yBin(:));
+    %}
     load(strcat('projectData/',ccsFiles(fileI).name))
     ccsY{n} = ccspred;
 end
 
-%%
+
+%[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
+
+
 feats = cell(N,1);
 labels = cell(N,1);
 models = cell(N,1);
@@ -88,22 +102,22 @@ options.maxiter     = 1000;
 options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
-%%
+
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults8','p')
+save('currentDomkeResults8_highest','p')
 
 
-%%
+%{
 feats_test=feats;
 efeats_test=efeats;
 models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults8','p');
+load('currentDomkeResults8_highest','p');
 %load('domkeResults2','p');
 
 
