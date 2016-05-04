@@ -7,13 +7,13 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
@@ -54,7 +54,7 @@ end
 
 
 %[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
-
+%%
 
 feats = cell(N,1);
 labels = cell(N,1);
@@ -62,15 +62,11 @@ models = cell(N,1);
 precipImages = cell(N,1);
 ccsLabels = cell(N,1);
 
+XX = [];
 for n = 1:N
     curFeats = x{n};
     feats{n} = reshape(x{n},sizr*sizc,13);
-    
-    %TEST FEATURES
-    tempFeat = feats{n}(:,1); 
-    tempCol = zeros(sizr*sizc,1);
-    tempCol(tempFeat<1)=1;
-    feats{n} = [feats{n} ones(sizr*sizc,1) tempCol];
+    XX = [XX;feats{n}];
     
     imageY = y{n};
     imageY(imageY<0)=0;
@@ -78,37 +74,14 @@ for n = 1:N
     
     ccsLabels{n} = getLabelsFromY(ccsY{n},curFeats(:,:,1));
     labels{n} = getLabelsFromY(y{n},curFeats(:,:,1));
-    models{n} = gridmodel(sizr,sizc,3);
+    %models{n} = gridmodel(sizr,sizc,3);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
 end
 
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
-%edge_params = {{'const'},{'pairtypes'}};
-fprintf('computing edge features...\n')
-efeats = cell(N,1);
-for n=1:N
-    %efeats{n} = edgeify_im(precipImages{n},edge_params,models{n}.pairs,models{n}.pairtype);
-    efeats{n} = edgeify_im(x{n}(:,:,2),edge_params,models{n}.pairs,models{n}.pairtype);
-end
+model = fitgmdist(XX,20);
 
-%loss_spec = 'trunc_cl_trwpll_5';
-loss_spec = 'trunc_uquad_trwpll_5';
 
-crf_type  = 'linear_linear';
-%options.viz         = @viz;
-options.print_times = 0; % since this is so slow, print stuff to screen
-options.gradual     = 1; % use gradual fitting
-options.maxiter     = 1000;
-options.rho         = rho;
-options.reg         = 1e-4;
-options.opt_display = 0;
-%%
-fprintf('training the model (this is slow!)...\n')
-%p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
-p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
-
-save('currentDomkeResults13','p')
 
 %%
 
