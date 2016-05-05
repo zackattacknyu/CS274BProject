@@ -7,17 +7,17 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 4;
+numRandInds = 200;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
@@ -115,13 +115,13 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults16','p')
+save('currentDomkeResults16_largeTrain','p')
 
 %%
 
 
 
-%%
+%{
 feats_test=feats;
 efeats_test=efeats;
 models_test=models;
