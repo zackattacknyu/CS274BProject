@@ -17,7 +17,7 @@ ccsFiles = dir('projectData/ccspred1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 3;
+numRandInds = 4;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
@@ -89,11 +89,18 @@ fprintf('computing edge features...\n')
 efeats = cell(N,1);
 for n=1:N
     %efeats{n} = edgeify_im(precipImages{n},edge_params,models{n}.pairs,models{n}.pairtype);
-    efeats{n} = edgeify_im(x{n}(:,:,2),edge_params,models{n}.pairs,models{n}.pairtype);
+    
+    %with attempt 15
+    %efeats{n} = edgeify_im(double(~(x{n}(:,:,1)>1)),edge_params,models{n}.pairs,models{n}.pairtype);
+    
+    %with attempt 16
+    tempMap = x{n}(:,:,1);
+    tempMap(tempMap<1) = min(tempMap(tempMap>0));
+    efeats{n} = edgeify_im(tempMap,edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
-%loss_spec = 'trunc_cl_trwpll_5';
-loss_spec = 'trunc_uquad_trwpll_5';
+loss_spec = 'trunc_cl_trwpll_5';
+%loss_spec = 'trunc_uquad_trwpll_5';
 
 crf_type  = 'linear_linear';
 %options.viz         = @viz;
@@ -105,21 +112,23 @@ options.reg         = 1e-4;
 options.opt_display = 0;
 %%
 fprintf('training the model (this is slow!)...\n')
-%p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
-p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
+p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
+%p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults13','p')
+save('currentDomkeResults16','p')
 
 %%
 
 
+
+%%
 feats_test=feats;
 efeats_test=efeats;
 models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults13','p');
+load('currentDomkeResults16','p');
 %load('domkeResults2','p');
 
 
@@ -130,14 +139,25 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 for n=1:length(feats_test)
-    %[b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
-    [b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
+    [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
+    %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
-    bi2 = (p.F)*feats_test{n}';
+    %bi2 = (p.F)*feats_test{n}';
     
-    %[~,x_pred] = max(b_i,[],1);
-    [~,x_pred] = max(bi2,[],1);
-    x_pred = reshape(x_pred,sizr,sizc);
+    [~,x_predInit] = max(b_i,[],1);
+    
+    for i = 1:length(x_predInit)
+       if(x_predInit(i)>1)
+          if(b_i(2,i)<0.83)
+              x_predInit(i)=3;
+          else
+              x_predInit(i)=2;
+          end
+       end
+    end
+    
+    %[~,x_pred] = max(bi2,[],1);
+    x_pred = reshape(x_predInit,sizr,sizc);
 
     % upsample predicted images to full resolution
     curTargetLabels = labels_test{n};
@@ -201,3 +221,18 @@ fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %}
+
+%%
+
+
+v2=find(curTargetLabels==2);
+v3=find(curTargetLabels==3);
+b2v2 = b_i(2,v2);
+b2v3 = b_i(2,v3);
+
+figure
+hold on
+plot(linspace(0,1,length(b2v2)),sort(b2v2))
+plot(linspace(0,1,length(b2v3)),sort(b2v3))
+legend('v2','v3')
+hold off
