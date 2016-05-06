@@ -7,15 +7,15 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
-%xOneFiles = dir('projectData/xone1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
+xOneFiles = dir('projectData/xone1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
-xOneFiles = dir('projectData/xone1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
+%xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
@@ -69,6 +69,7 @@ labels = cell(N,1);
 models = cell(N,1);
 precipImages = cell(N,1);
 ccsLabels = cell(N,1);
+noLabelInds = cell(N,1);
 
 for n = 1:N
     curFeats = x{n};
@@ -83,13 +84,13 @@ for n = 1:N
     imageY = y{n};
     
     noRainfallReadInds = find(imageY<0);
-    noLabelInds = union(noRainfallReadInds,noCloudIndices{n});
+    noLabelInds{n} = union(noRainfallReadInds,noCloudIndices{n});
     
     imageY(imageY<0)=0;
     precipImages{n} = imageY;
     
-    ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
-    labels{n} = getLabelsFromY(y{n},noLabelInds);
+    ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds{n});
+    labels{n} = getLabelsFromY(y{n},noLabelInds{n});
     models{n} = gridmodel(sizr,sizc,3);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -107,6 +108,8 @@ for n=1:N
     
     %with attempt 16 and 17
     tempMap = x{n}(:,:,1);
+    tempMap(noLabelInds{n}) = max(tempMap(setdiff(1:numel(tempMap),noLabelInds{n})));
+    tempMap(tempMap<1) = max(tempMap(tempMap>0));
     efeats{n} = edgeify_im(tempMap,edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
@@ -126,9 +129,9 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults17_mini','p')
+save('currentDomkeResults17_mini_2','p')
 
-%%
+%{
 
 
 
