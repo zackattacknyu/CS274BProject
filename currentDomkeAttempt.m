@@ -10,14 +10,16 @@ nvals = 2;
 yFiles = dir('projectData/ytarget1109*');
 xFiles = dir('projectData/xdata1109*');
 ccsFiles = dir('projectData/ccspred1109*');
+xOneFiles = dir('projectData/xone1109*');
 
 %yFiles = dir('projectData/ytarget1209*');
 %xFiles = dir('projectData/xdata1209*');
 %ccsFiles = dir('projectData/ccspred1209*');
+%xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 200;
+numRandInds = 100;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
@@ -26,7 +28,7 @@ trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
 
-%addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
+addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
 
 x = cell(1,N);
@@ -34,6 +36,7 @@ y = cell(1,N);
 
 ccsY = cell(1,N);
 curSum = zeros(1,N);
+noCloudIndices = cell(1,N);
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -42,6 +45,9 @@ for n = 1:N
     x{n} = xdata;
     load(strcat('projectData/',yFiles(fileI).name))
     y{n} = ytarget;
+    
+    noCloudIndices{n} = find(x{n}(:,:,1)<=0);
+    
     %{
     yBin = ytarget;
     yBin(ytarget<1)=0;
@@ -50,6 +56,8 @@ for n = 1:N
     %}
     load(strcat('projectData/',ccsFiles(fileI).name))
     ccsY{n} = ccspred;
+    load(strcat('projectData/',xOneFiles(fileI).name))
+    x{n}(:,:,1)=xone;
 end
 
 
@@ -67,17 +75,21 @@ for n = 1:N
     feats{n} = reshape(x{n},sizr*sizc,13);
     
     %TEST FEATURES
-    tempFeat = feats{n}(:,1); 
+    %tempFeat = feats{n}(:,1); 
     tempCol = zeros(sizr*sizc,1);
-    tempCol(tempFeat<1)=1;
+    tempCol(noCloudIndices{n})=1;
     feats{n} = [feats{n} ones(sizr*sizc,1) tempCol];
     
     imageY = y{n};
+    
+    noRainfallReadInds = find(imageY<0);
+    noLabelInds = union(noRainfallReadInds,noCloudIndices{n});
+    
     imageY(imageY<0)=0;
     precipImages{n} = imageY;
     
-    ccsLabels{n} = getLabelsFromY(ccsY{n},curFeats(:,:,1));
-    labels{n} = getLabelsFromY(y{n},curFeats(:,:,1));
+    ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
+    labels{n} = getLabelsFromY(y{n},noLabelInds);
     models{n} = gridmodel(sizr,sizc,3);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -93,9 +105,9 @@ for n=1:N
     %with attempt 15
     %efeats{n} = edgeify_im(double(~(x{n}(:,:,1)>1)),edge_params,models{n}.pairs,models{n}.pairtype);
     
-    %with attempt 16
+    %with attempt 16 and 17
     tempMap = x{n}(:,:,1);
-    tempMap(tempMap<1) = min(tempMap(tempMap>0));
+    tempMap(tempMap<1) = max(tempMap(tempMap>0));
     efeats{n} = edgeify_im(tempMap,edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
@@ -110,12 +122,12 @@ options.maxiter     = 1000;
 options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
-%%
+
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults16_largeTrain','p')
+save('currentDomkeResults17','p')
 
 %%
 

@@ -11,6 +11,7 @@ Each .mat file is a 500x750 array of data related to the Western United States
 
 Here are the prefixes and the data contained in their files:
 	ytarget: indicates target rainfall data from radar (in mm)
+	         If value is < 0, then there was no reading
 	xdata: indicates feature data. these files are 500x750x13 arrays with last dimension being feature
 			First feature is pixel wise temperature
 			Next 12 features are related to its patch

@@ -1,4 +1,4 @@
-function [ curLabelsUse ] = getLabelsFromY( curY,curTempMap )
+function [ curLabelsUse ] = getLabelsFromY( curY,noLabelInds )
 %GETLABELSFROMY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,7 +11,7 @@ curLabelsUse = ones(sizr,sizc);
 
 curLabelsUse(curY<1)=2;
 curLabelsUse(curY>=1)=3;
-curLabelsUse(curTempMap<=0)=1;
+curLabelsUse(noLabelInds)=1;
 
 end
 
