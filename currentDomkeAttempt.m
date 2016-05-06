@@ -7,23 +7,23 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
-%xOneFiles = dir('projectData/xone1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
+xOneFiles = dir('projectData/xone1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
-xOneFiles = dir('projectData/xone1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
+%xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 10;
-trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+numRandInds = 6;
+%trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
-%load('highestPrecipInds1109');
-%trialInds = highestPrecipInds(1:numRandInds);
+load('highestPrecipInds1109');
+trialInds = highestPrecipInds(1:numRandInds);
 
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -142,7 +142,7 @@ precipImages_test=precipImages;
 load('currentDomkeResults17','p');
 %load('domkeResults2','p');
 
-cutoff = 0.7;
+cutoff = 0.85;
 
 fprintf('get the marginals for test images...\n');
 close all

@@ -19,11 +19,11 @@ xOneFiles = dir('projectData/xone1109*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 10;
-trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+numRandInds = 6;
+%trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
-%load('highestPrecipInds1109');
-%trialInds = highestPrecipInds(1:numRandInds);
+load('highestPrecipInds1109');
+trialInds = highestPrecipInds(1:numRandInds);
 
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -131,7 +131,7 @@ p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 
 save('currentDomkeResults17_mini_2','p')
 
-%{
+%%
 
 
 
@@ -142,7 +142,7 @@ models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults17','p');
+load('currentDomkeResults17_mini_2','p');
 %load('domkeResults2','p');
 
 cutoff = 0.7;
