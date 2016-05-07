@@ -54,10 +54,10 @@ load('currentDomkeResults17.mat','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 9;
+numRandInds = 25;
 
 load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:3:numRandInds);
+trialInds2 = highestPrecipInds(1:5:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
@@ -72,7 +72,7 @@ E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
-for n=1:length(feats_test)
+for n=1%:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -92,6 +92,7 @@ for n=1:length(feats_test)
     CCS(n) = sum( ccsResults~=comparisonLabels);
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
+    %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
     for cutoff = 0.5:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
@@ -112,39 +113,13 @@ for n=1:length(feats_test)
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
         
+        displayTargetPred(x_pred,curTargetLabels);
     end
     
     
 
     
-    x_predDisp = x_pred; 
-    %x_predDisp(curTargetLabels<=1)=-1;
-    x_predDisp(x_pred<=2)=0;
-    x_predDisp(x_pred>=3)=2;
-    
-    labelsDisp = curTargetLabels;
-    %labelsDisp(curTargetLabels<=1)=-1;
-    labelsDisp(curTargetLabels<=2)=0;
-    labelsDisp(labels_test{n}>=3)=2;
-    
-    
-    figure
-    subplot(1,2,1)
-    imagesc(labelsDisp);
-    title('Target Precipitation Image');
-    colormap([1 1 1;0.8 0.8 0.8;jet(20)])
-    caxis([-1 20]) 
-    drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
-    colorbar('vertical')
-    
-    subplot(1,2,2)
-    imagesc(x_predDisp);
-    title('Predicted Precipitation Image');
-    colormap([1 1 1;0.8 0.8 0.8;jet(20)])
-    caxis([-1 20]) 
-    drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
-    colorbar('vertical')
-    drawnow
+    %displayTargetPred(x_pred,curTargetLabels);
     
     %{
     subplot(1,3,2)
@@ -166,12 +141,21 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 v2=find(curTargetLabels==2);
 v3=find(curTargetLabels==3);
 b2v2 = b_i(2,v2);
+b3v2 = b_i(3,v2);
 b2v3 = b_i(2,v3);
+b3v3 = b_i(3,v3);
 
+[nb2V2,binPos2v] = hist(b2v2,100);
+[nb3V2,binPos2] = hist(b3v2,100);
+[nb2V3,binPos3v] = hist(b2v3,100);
+[nb3V3,binPos3] = hist(b3v3,100);
 figure
 hold on
-plot(sort(b2v2),1:length(b2v2),'r-')
-plot(sort(b2v3),1:length(b2v3),'g-')
-legend('v2','v3')
+plot(binPos2v,nb2V2,'r--');
+plot(binPos2,nb3V2,'r-');
+plot(binPos3v,nb2V3,'b--');
+plot(binPos3,nb3V3,'b-');
+legend('Prob Label=2 among Label 2 Nodes','Prob Label=3 among Label 2 Nodes',...
+    'Prob Label=2 among Label 3 Nodes','Prob Label=3 among Label 3 Nodes');
 hold off
-%}
+
