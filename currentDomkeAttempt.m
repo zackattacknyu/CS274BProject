@@ -7,23 +7,23 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-yFiles = dir('projectData/ytarget1109*');
-xFiles = dir('projectData/xdata1109*');
-ccsFiles = dir('projectData/ccspred1109*');
-xOneFiles = dir('projectData/xone1109*');
+%yFiles = dir('projectData/ytarget1109*');
+%xFiles = dir('projectData/xdata1109*');
+%ccsFiles = dir('projectData/ccspred1109*');
+%xOneFiles = dir('projectData/xone1109*');
 
-%yFiles = dir('projectData/ytarget1209*');
-%xFiles = dir('projectData/xdata1209*');
-%ccsFiles = dir('projectData/ccspred1209*');
-%xOneFiles = dir('projectData/xone1209*');
+yFiles = dir('projectData/ytarget1209*');
+xFiles = dir('projectData/xdata1209*');
+ccsFiles = dir('projectData/ccspred1209*');
+xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
-%trialInds = 1:totalN;
-numRandInds = 6;
+trialInds = 1:totalN;
+%numRandInds = 6;
 %trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
-load('highestPrecipInds1109');
-trialInds = highestPrecipInds(1:numRandInds);
+%load('highestPrecipInds1109');
+%trialInds = highestPrecipInds(1:numRandInds);
 
 N = length(trialInds);
 %feats{n}  = featurize_im(ims{n},feat_params);
@@ -41,29 +41,29 @@ noCloudIndices = cell(1,N);
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
     fileI = trialInds(n);
-    load(strcat('projectData/',xFiles(fileI).name))
-    x{n} = xdata;
+    %load(strcat('projectData/',xFiles(fileI).name))
+    %x{n} = xdata;
     load(strcat('projectData/',yFiles(fileI).name))
-    y{n} = ytarget;
+    %y{n} = ytarget;
     
-    noCloudIndices{n} = find(x{n}(:,:,1)<=0);
+    %noCloudIndices{n} = find(x{n}(:,:,1)<=0);
     
-    %{
+    
     yBin = ytarget;
     yBin(ytarget<1)=0;
     yBin(ytarget>=1)=1;
     curSum(n) = sum(yBin(:));
-    %}
-    load(strcat('projectData/',ccsFiles(fileI).name))
-    ccsY{n} = ccspred;
-    load(strcat('projectData/',xOneFiles(fileI).name))
-    x{n}(:,:,1)=xone;
+    
+    %load(strcat('projectData/',ccsFiles(fileI).name))
+    %ccsY{n} = ccspred;
+    %load(strcat('projectData/',xOneFiles(fileI).name))
+    %x{n}(:,:,1)=xone;
 end
 
 
-%[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
+[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
 
-
+%%
 feats = cell(N,1);
 labels = cell(N,1);
 models = cell(N,1);
