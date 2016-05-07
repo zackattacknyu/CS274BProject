@@ -54,7 +54,7 @@ load('currentDomkeResults17.mat','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 10;
+numRandInds = 9;
 
 load('highestPrecipInds1209');
 trialInds2 = highestPrecipInds(1:3:numRandInds);
@@ -78,42 +78,44 @@ for n=1:length(feats_test)
     
     %bi2 = (p.F)*feats_test{n}';
     
-    [~,x_predInit] = max(b_i,[],1);
+    
     
     curTargetLabels = labels_test{n};
     testPixels = find(curTargetLabels>1);
+    comparisonLabels = labels_test{n}(testPixels);
+    
     cutoffUse = length(find(curTargetLabels(testPixels)==2))/numel(testPixels);
-    cutoffUse
-    for i = 1:length(x_predInit)
-       if(x_predInit(i)>1)
-          if(b_i(2,i)<cutoff)
-              x_predInit(i)=3;
-          else
-              x_predInit(i)=2;
-          end
-       end
+    %cutoffUse
+    fprintf('Stats for Time %f\n',n);
+    fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
+    ccsResults = ccsLabels{n}(testPixels);
+    CCS(n) = sum( ccsResults~=comparisonLabels);
+    fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
+    
+    for cutoff = 0.5:0.05:0.95
+        
+        x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
+
+        xpredResults = x_pred(testPixels);
+        
+
+        E(n) = sum( xpredResults~=comparisonLabels);
+        Base(n) = sum( ones(size(comparisonLabels)).*2~=comparisonLabels);
+        T(n) = numel(testPixels);
+
+        
+        fprintf('Current Cutoff: %f\n',cutoff);
+        fprintf('Current pixelwise error: %f \n',E(n)/T(n));
+        
+
+        precipPixels = find(curTargetLabels==3);
+        fprintf('Percent Pred Pixels Correct %f\n\n',...
+            length(find(x_pred(precipPixels)==3))/numel(precipPixels));
+        
     end
     
-    %[~,x_pred] = max(bi2,[],1);
-    x_pred = reshape(x_predInit,sizr,sizc);
-
-    %testPixels = find(feats{n}(:,1)>0);
-    ccsResults = ccsLabels{n}(testPixels);
-    xpredResults = x_pred(testPixels);
-    comparisonLabels = labels_test{n}(testPixels);
-    CCS(n) = sum( ccsResults~=comparisonLabels);
-    E(n) = sum( xpredResults~=comparisonLabels);
-    Base(n) = sum( ones(size(comparisonLabels)).*2~=comparisonLabels);
-    T(n) = numel(testPixels);
     
-    fprintf('Stats for Time %f\n',n);
-    fprintf('Current pixelwise error: %f \n',E(n)/T(n));
-    fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
-    fprintf('CCS Pred Error: %f \n',CCS(n)/T(n));
 
-    precipPixels = find(curTargetLabels==3);
-    fprintf('Percent Pred Pixels Correct %f\n\n',...
-        length(find(x_pred(precipPixels)==3))/numel(precipPixels));
     
     x_predDisp = x_pred; 
     %x_predDisp(curTargetLabels<=1)=-1;
