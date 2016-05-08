@@ -21,11 +21,11 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 5;
-%trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+numRandInds = 160;
+trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
-load('highestPrecipInds1109');
-trialInds = highestPrecipInds(1:numRandInds);
+%load('highestPrecipInds1109');
+%trialInds = highestPrecipInds(1:numRandInds);
 
 
 loss_spec = 'trunc_cl_trwpll_5';
@@ -48,9 +48,12 @@ options.opt_display = 0;
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
-%%
 
-load('currentDomkeResults17.mat','p');
+save('domkeCRFrun18.mat','p');
+%%
+%
+load('domkeCRFrun18','p');
+%load('currentDomkeResults17.mat','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
@@ -65,14 +68,14 @@ trialInds2 = highestPrecipInds(1:5:numRandInds);
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
 cutoff = 0.85;
-
+%%
 fprintf('get the marginals for test images...\n');
 close all
 E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
-for n=1%:length(feats_test)
+for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -113,7 +116,7 @@ for n=1%:length(feats_test)
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
         
-        displayTargetPred(x_pred,curTargetLabels);
+        %displayTargetPred(x_pred,curTargetLabels);
     end
     
     
@@ -159,3 +162,4 @@ legend('Prob Label=2 among Label 2 Nodes','Prob Label=3 among Label 2 Nodes',...
     'Prob Label=2 among Label 3 Nodes','Prob Label=3 among Label 3 Nodes');
 hold off
 
+%}

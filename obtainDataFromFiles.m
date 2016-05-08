@@ -60,7 +60,8 @@ for n = 1:N
     
 end
 
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+%edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+edge_params = {{'const'},{'diffthresh'}};
 %edge_params = {{'const'},{'diffthresh'}};
 
 fprintf('computing edge features...\n')

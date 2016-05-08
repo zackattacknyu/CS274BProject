@@ -18,9 +18,9 @@ ccsFiles = dir('projectData/ccspred1209*');
 xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
-trialInds = 1:totalN;
-%numRandInds = 6;
-%trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+%trialInds = 1:totalN;
+numRandInds = 5;
+trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
 %trialInds = highestPrecipInds(1:numRandInds);
@@ -41,29 +41,29 @@ noCloudIndices = cell(1,N);
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
     fileI = trialInds(n);
-    %load(strcat('projectData/',xFiles(fileI).name))
-    %x{n} = xdata;
+    load(strcat('projectData/',xFiles(fileI).name))
+    x{n} = xdata;
     load(strcat('projectData/',yFiles(fileI).name))
-    %y{n} = ytarget;
+    y{n} = ytarget;
     
-    %noCloudIndices{n} = find(x{n}(:,:,1)<=0);
+    noCloudIndices{n} = find(x{n}(:,:,1)<=0);
     
-    
+    %{
     yBin = ytarget;
     yBin(ytarget<1)=0;
     yBin(ytarget>=1)=1;
     curSum(n) = sum(yBin(:));
-    
-    %load(strcat('projectData/',ccsFiles(fileI).name))
-    %ccsY{n} = ccspred;
-    %load(strcat('projectData/',xOneFiles(fileI).name))
-    %x{n}(:,:,1)=xone;
+    %}
+    load(strcat('projectData/',ccsFiles(fileI).name))
+    ccsY{n} = ccspred;
+    load(strcat('projectData/',xOneFiles(fileI).name))
+    x{n}(:,:,1)=xone;
 end
 
 
-[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
+%[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
 
-%%
+
 feats = cell(N,1);
 labels = cell(N,1);
 models = cell(N,1);
@@ -71,31 +71,62 @@ precipImages = cell(N,1);
 ccsLabels = cell(N,1);
 
 for n = 1:N
-    curFeats = x{n};
-    feats{n} = reshape(x{n},sizr*sizc,13);
-    
-    %TEST FEATURES
-    %tempFeat = feats{n}(:,1); 
-    tempCol = zeros(sizr*sizc,1);
-    tempCol(noCloudIndices{n})=1;
-    feats{n} = [feats{n} ones(sizr*sizc,1) tempCol];
-    
     imageY = y{n};
     
     noRainfallReadInds = find(imageY<0);
     noLabelInds = union(noRainfallReadInds,noCloudIndices{n});
     
+    ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
+    labels{n} = getLabelsFromY(y{n},noLabelInds);
+    %models{n} = gridmodel(sizr,sizc,3);
+    
+    mask = labels{n};
+    mask(mask<2)=0;
+    goodPixels = find(mask>0);
+    
+    %[goodRows,goodCol] = find(mask>0);
+    [goodRows,goodCol] = find(mask>=0);
+    boxMinR = min(goodRows); boxMaxR = max(goodRows); 
+    boxMinC = min(goodCol); boxMaxC = max(goodCol);
+    
+    
+    numR = boxMaxR-boxMinR+1;
+    numC = boxMaxC-boxMinC+1;
+    
+    models{n} = gridmodel(numR,numC,3);
+    
+    curFeats = x{n};
+    %feats{n} = reshape(x{n},sizr*sizc,13);
+    currentX = x{n}(boxMinR:boxMaxR,boxMinC:boxMaxC,:);
+    feats{n} = reshape(currentX,numR*numC,13);
+    
+    %TEST FEATURES
+    %tempFeat = feats{n}(:,1); 
+    tempCol = zeros(sizr,sizc);
+    tempCol(noCloudIndices{n})=1;
+    tempCol = tempCol(boxMinR:boxMaxR,boxMinC:boxMaxC);
+    feats{n} = [feats{n} ones(numR*numC,1) tempCol(:)];
+    
+    
+    labels{n} = labels{n}(boxMinR:boxMaxR,boxMinC:boxMaxC);
+    
+    
+    
     imageY(imageY<0)=0;
     precipImages{n} = imageY;
     
-    ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
-    labels{n} = getLabelsFromY(y{n},noLabelInds);
-    models{n} = gridmodel(sizr,sizc,3);
+    
+    
+    
+    
+    %feats{n} = feats{n}(goodPixels,:);
+    %models{n} = partialGridModel(sizr,sizc,3,mask);
     
     fprintf(strcat('Making data for time ',num2str(n),' of ',num2str(N),'\n'));
 end
-
-edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+%%
+%edge_params = {{'const'},{'diffthresh'},{'pairtypes'}};
+edge_params = {{'const'},{'diffthresh'}};
 %edge_params = {{'const'},{'pairtypes'}};
 fprintf('computing edge features...\n')
 efeats = cell(N,1);
@@ -108,6 +139,7 @@ for n=1:N
     %with attempt 16 and 17
     tempMap = x{n}(:,:,1);
     efeats{n} = edgeify_im(tempMap,edge_params,models{n}.pairs,models{n}.pairtype);
+    %efeats{n} = makeEdgeFeatures(tempMap,edge_params,models{n}.pairs,models{n}.pairtype);
 end
 
 loss_spec = 'trunc_cl_trwpll_5';
@@ -126,20 +158,20 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults17_mini','p')
+save('currentDomkeResults19_mini','p')
 
 %%
 
 
 
-
+load('currentDomkeResults19_mini')
 feats_test=feats;
 efeats_test=efeats;
 models_test=models;
 labels_test=labels;
 precipImages_test=precipImages;
 
-load('currentDomkeResults17','p');
+%load('currentDomkeResults17','p');
 %load('domkeResults2','p');
 
 cutoff = 0.85;
