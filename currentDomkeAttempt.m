@@ -7,19 +7,19 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%yFiles = dir('projectData/ytarget1109*');
-%xFiles = dir('projectData/xdata1109*');
-%ccsFiles = dir('projectData/ccspred1109*');
-%xOneFiles = dir('projectData/xone1109*');
+yFiles = dir('projectData/ytarget1109*');
+xFiles = dir('projectData/xdata1109*');
+ccsFiles = dir('projectData/ccspred1109*');
+xOneFiles = dir('projectData/xone1109*');
 
-yFiles = dir('projectData/ytarget1209*');
-xFiles = dir('projectData/xdata1209*');
-ccsFiles = dir('projectData/ccspred1209*');
-xOneFiles = dir('projectData/xone1209*');
+%yFiles = dir('projectData/ytarget1209*');
+%xFiles = dir('projectData/xdata1209*');
+%ccsFiles = dir('projectData/ccspred1209*');
+%xOneFiles = dir('projectData/xone1209*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 200;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
@@ -81,7 +81,15 @@ for n = 1:N
     %models{n} = gridmodel(sizr,sizc,3);
     
     mask = labels{n};
-    mask(mask<2)=0;
+    %mask(mask<2)=0;
+    %mask(mask<3)=0;
+    
+    if(rand<0.5)
+        mask(mask<2)=0;
+    else
+        mask(mask<3)=0;
+    end
+    
     goodPixels = find(mask>0);
     
     %[goodRows,goodCol] = find(mask>0);
@@ -153,14 +161,14 @@ options.maxiter     = 1000;
 options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
-%%
+
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('currentDomkeResults19_mini','p')
+save('currentDomkeResults19_mini_precipBoundRand','p')
 
-%%
+%{
 
 
 

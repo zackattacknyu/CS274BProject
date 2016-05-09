@@ -53,15 +53,18 @@ save('domkeCRFrun18.mat','p');
 %%
 %
 load('domkeCRFrun18','p');
-%load('currentDomkeResults17.mat','p');
+%load('currentDomkeResults19_mini'); %DISTRIBUTION IS NOT VERY BIMODAL
+%load('currentDomkeResults19_mini_precipBound'); %DIST IS QUITE BIMODAL THIS WAY
+%load('currentDomkeResults19_mini_precipBoundRand');
+%load('currentDomkeResults17.mat','p'); %DO NOT USE ATM
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 25;
+numRandInds = 10;
 
 load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:5:numRandInds);
-%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+%trialInds2 = highestPrecipInds(1:numRandInds);
+trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
     obtainDataFromFiles(trialInds2,...
@@ -75,13 +78,14 @@ E = zeros(1,length(feats_test));
 T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
-for n=1:length(feats_test)
+biArrays = cell(1,length(feats_test));
+for n=3%1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
     %bi2 = (p.F)*feats_test{n}';
     
-    
+    biArrays{n} = b_i;
     
     curTargetLabels = labels_test{n};
     testPixels = find(curTargetLabels>1);
@@ -90,13 +94,13 @@ for n=1:length(feats_test)
     cutoffUse = length(find(curTargetLabels(testPixels)==2))/numel(testPixels);
     %cutoffUse
     fprintf('Stats for Time %f\n',n);
-    fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
+    
     ccsResults = ccsLabels{n}(testPixels);
     CCS(n) = sum( ccsResults~=comparisonLabels);
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.5:0.05:0.95
+    for cutoff = 0.85%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
 
@@ -115,7 +119,7 @@ for n=1:length(feats_test)
         precipPixels = find(curTargetLabels==3);
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
-        
+        fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
         %displayTargetPred(x_pred,curTargetLabels);
     end
     
@@ -140,13 +144,20 @@ fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %%
 
-
-v2=find(curTargetLabels==2);
-v3=find(curTargetLabels==3);
-b2v2 = b_i(2,v2);
-b3v2 = b_i(3,v2);
-b2v3 = b_i(2,v3);
-b3v3 = b_i(3,v3);
+b2v2 = [];
+b3v2 = [];
+b2v3 = [];
+b3v3 = [];
+for n = 1:length(labels_test)
+    curTargetLabels = labels_test{n};
+    v2=find(curTargetLabels==2);
+    v3=find(curTargetLabels==3);
+    biCur = biArrays{n};
+    b2v2 = [b2v2 biCur(2,v2)];
+    b3v2 = [b3v2 biCur(3,v2)];
+    b2v3 = [b2v3 biCur(2,v3)];
+    b3v3 = [b3v3 biCur(3,v3)];
+end
 
 [nb2V2,binPos2v] = hist(b2v2,100);
 [nb3V2,binPos2] = hist(b3v2,100);
@@ -154,12 +165,15 @@ b3v3 = b_i(3,v3);
 [nb3V3,binPos3] = hist(b3v3,100);
 figure
 hold on
-plot(binPos2v,nb2V2,'r--');
-plot(binPos2,nb3V2,'r-');
-plot(binPos3v,nb2V3,'b--');
-plot(binPos3,nb3V3,'b-');
-legend('Prob Label=2 among Label 2 Nodes','Prob Label=3 among Label 2 Nodes',...
-    'Prob Label=2 among Label 3 Nodes','Prob Label=3 among Label 3 Nodes');
+plot(binPos2v,nb2V2./sum(nb2V2),'r--');
+plot(binPos2,nb3V2./sum(nb3V2),'r-');
+plot(binPos3v,nb2V3./sum(nb2V3),'b--');
+plot(binPos3,nb3V3./sum(nb3V3),'b-');
+title('Histogram of Probability Values');
+xlabel('Probability');
+ylabel('Ratio of Elements with Value');
+legend('p(y_i=2) for i \in E','p(y_i=3) for i \in E',...
+    'p(y_i=2) for i \in F','p(y_i=3) for i \in F');
 hold off
 
 %}
