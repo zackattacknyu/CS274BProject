@@ -79,7 +79,7 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 biArrays = cell(1,length(feats_test));
-for n=1:length(feats_test)
+for n=3%1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -103,6 +103,9 @@ for n=1:length(feats_test)
     for cutoff = 0.85%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
+        
+        %samples from the distribution
+        %x_pred = getPredLabelsRand(b_i,sizr,sizc);
 
         xpredResults = x_pred(testPixels);
         
@@ -120,13 +123,13 @@ for n=1:length(feats_test)
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
         fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
-        %displayTargetPred(x_pred,curTargetLabels);
+        displayTargetPred(x_pred,curTargetLabels);
     end
     
     
 
     
-    displayTargetPred(x_pred,curTargetLabels);
+    %displayTargetPred(x_pred,curTargetLabels);
     
     %{
     subplot(1,3,2)
