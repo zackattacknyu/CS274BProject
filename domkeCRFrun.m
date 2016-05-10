@@ -79,7 +79,7 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 biArrays = cell(1,length(feats_test));
-for n=3%1:length(feats_test)
+for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -126,7 +126,7 @@ for n=3%1:length(feats_test)
     
 
     
-    %displayTargetPred(x_pred,curTargetLabels);
+    displayTargetPred(x_pred,curTargetLabels);
     
     %{
     subplot(1,3,2)
@@ -144,6 +144,66 @@ fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %%
 
+biCur = biArrays{6};
+realLabels = labels_test{6};
+
+impPixels = find(realLabels>1);
+[rocx,rocy] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
+figure
+plot(rocx,rocy);
+
+bi2 = biCur(2,:); bi3 = biCur(3,:);
+bi2re=reshape(bi2,sizr,sizc);
+
+figure
+imagesc(bi2re); colorbar;
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+figure
+imagesc(reshape(biCur(3,:),sizr,sizc)); colorbar;
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+%%
+
+b2v2 = [];
+b3v2 = [];
+b2v3 = [];
+b3v3 = [];
+
+figure
+hold on
+
+ii = 1;
+legendArray = cell(1,6);
+%for numToIncl=[1 3 5 10]
+for indToIncl=[1 2 4 6 8 10]
+    
+    allCloudLabels = [];
+    allCloudScores = [];
+    %for n = 1:numToIncl
+    for n = indToIncl
+        curTargetLabels = labels_test{n};
+        cloudPixels = find(curTargetLabels>1);
+        allCloudLabels = [allCloudLabels curTargetLabels(cloudPixels)'];
+
+        biCur = biArrays{n};
+        allCloudScores = [allCloudScores biCur(3,cloudPixels)];
+        
+        legendArray{ii} = num2str(n);
+        ii = ii+1;
+    end
+
+    [rocx,rocy] = perfcurve(allCloudLabels,allCloudScores,3);
+    plot(rocx,rocy);
+    xlabel('False positive rate')
+    ylabel('True positive rate')
+
+end
+legend(legendArray);
+hold off
+
+
+
+%{
 b2v2 = [];
 b3v2 = [];
 b2v3 = [];
@@ -158,6 +218,7 @@ for n = 1:length(labels_test)
     b2v3 = [b2v3 biCur(2,v3)];
     b3v3 = [b3v3 biCur(3,v3)];
 end
+
 
 [nb2V2,binPos2v] = hist(b2v2,100);
 [nb3V2,binPos2] = hist(b3v2,100);
@@ -175,5 +236,5 @@ ylabel('Ratio of Elements with Value');
 legend('p(y_i=2) for i \in E','p(y_i=3) for i \in E',...
     'p(y_i=2) for i \in F','p(y_i=3) for i \in F');
 hold off
-
+%}
 %}
