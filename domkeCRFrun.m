@@ -147,9 +147,42 @@ fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %%
 
-numToSee = 3;
+%TODO: MORE PROBABILISTIC TESTS HERE
+numToSee = 2;
 biCur = biArrays{numToSee};
 realLabels = labels_test{numToSee};
+
+labelsCur = realLabels(:);
+[~,labelsTest] = max(biCur,[],1);
+
+Cpixels = find(realLabels==1);
+Epixels = find(realLabels==2);
+Fpixels = find(realLabels==3);
+
+probOfData = 0;
+probOfLabelSets = zeros(1,3);
+probOfTargetLabel = zeros(1,3);
+for i = 1:3
+    curInds = find(realLabels==i);
+    for j = 1:length(curInds)
+        currentIndex = curInds(j);
+       mm = labelsTest(currentIndex);
+       
+       curElementProb = biCur(mm,currentIndex);
+       curTargetProb = biCur(i,currentIndex);
+       
+       
+       probOfData = probOfData + curElementProb;
+       probOfLabelSets(i) = probOfLabelSets(i) + curElementProb;
+       probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb;
+    end
+    probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
+    probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
+end
+avgProb = probOfData/size(biCur,2);
+
+
+
 
 impPixels = find(realLabels>1);
 [rocx,rocy] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
