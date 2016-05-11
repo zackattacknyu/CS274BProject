@@ -79,7 +79,7 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 biArrays = cell(1,length(feats_test));
-for n=3%1:length(feats_test)
+for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -102,10 +102,10 @@ for n=3%1:length(feats_test)
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
     for cutoff = 0.85%0.4:0.05:0.95
         
-        x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
+        %x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
         %samples from the distribution
-        %x_pred = getPredLabelsRand(b_i,sizr,sizc);
+        x_pred = getPredLabelsRand(b_i,sizr,sizc,testPixels);
 
         xpredResults = x_pred(testPixels);
         
@@ -147,23 +147,28 @@ fprintf('baseline error: %f \n',sum(Base)/sum(T))
 fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %%
 
-biCur = biArrays{6};
-realLabels = labels_test{6};
+numToSee = 3;
+biCur = biArrays{numToSee};
+realLabels = labels_test{numToSee};
 
 impPixels = find(realLabels>1);
 [rocx,rocy] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
 figure
 plot(rocx,rocy);
 
-bi2 = biCur(2,:); bi3 = biCur(3,:);
-bi2re=reshape(bi2,sizr,sizc);
+bi1re=reshape(biCur(1,:),sizr,sizc);
+bi2re=reshape(biCur(2,:),sizr,sizc);
+bi3re=reshape(biCur(3,:),sizr,sizc);
+figure
+imagesc(bi1re); colorbar;
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 figure
 imagesc(bi2re); colorbar;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 figure
-imagesc(reshape(biCur(3,:),sizr,sizc)); colorbar;
+imagesc(bi3re); colorbar;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 %%
 

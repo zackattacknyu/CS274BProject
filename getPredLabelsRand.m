@@ -5,7 +5,9 @@ function [ x_pred ] = getPredLabelsRand( b_i,sizr,sizc,testPixels)
 [~,x_predInit] = max(b_i,[],1);
 for kk = 1:length(testPixels)
    ind = testPixels(kk); 
-   if(rand>b_i(2,ind))
+   curEx = b_i(:,ind);
+   curEx = curEx./(curEx(2)+curEx(3));
+   if(rand>curEx(2))
       x_predInit(ind)=3;
   else
       x_predInit(ind)=2;
