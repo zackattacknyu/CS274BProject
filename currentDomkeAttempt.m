@@ -19,7 +19,7 @@ xOneFiles = dir('projectData/xone1109*');
 
 totalN = length(xFiles);
 %trialInds = 1:totalN;
-numRandInds = 200;
+numRandInds = 10;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');

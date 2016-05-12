@@ -50,9 +50,9 @@ p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
 save('domkeCRFrun18.mat','p');
+
 %%
-%
-load('domkeCRFrun18','p');
+load('domkeCRFrun19','p');
 %load('currentDomkeResults19_mini'); %DISTRIBUTION IS NOT VERY BIMODAL
 %load('currentDomkeResults19_mini_precipBound'); %DIST IS QUITE BIMODAL THIS WAY
 %load('currentDomkeResults19_mini_precipBoundRand');
@@ -123,7 +123,7 @@ for n=1:length(feats_test)
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
         fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
-        displayTargetPred(x_pred,curTargetLabels);
+        %displayTargetPred(x_pred,curTargetLabels);
     end
     
     
@@ -148,61 +148,141 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %%
 
 %TODO: MORE PROBABILISTIC TESTS HERE
-numToSee = 2;
-biCur = biArrays{numToSee};
-realLabels = labels_test{numToSee};
+%SHOW AVERAGE PROBABILITY OF CLASS 2 AND 3 AMONG THOSE PIXELS
+aucInfo = zeros(1,length(feats_test));
+%priors = [1;0.02;10];
+for numToSee = 1:10;
+    biCur = biArrays{numToSee};
+    
+    %multiply by prior, then normalize. 
+    %TODO: ***DID NOT WORK, LOOK INTO BETTER WAYS***
+    %biCur = biCur./repmat(priors,1,size(biCur,2));
+    %biCur = biCur./repmat(sum(biCur,1),3,1);
+    
+    realLabels = labels_test{numToSee};
 
-labelsCur = realLabels(:);
-[~,labelsTest] = max(biCur,[],1);
+    labelsCur = realLabels(:);
+    [~,labelsTest] = max(biCur,[],1);
 
-Cpixels = find(realLabels==1);
-Epixels = find(realLabels==2);
-Fpixels = find(realLabels==3);
+    Cpixels = find(realLabels==1);
+    Epixels = find(realLabels==2);
+    Fpixels = find(realLabels==3);
+    
+    fprintf(strcat('Stats for Num ',num2str(numToSee),'\n'));
+    fprintf(strcat('|E| = ',num2str(numel(Epixels)),'\n'));
+    fprintf(strcat('|F| = ',num2str(numel(Fpixels)),'\n'));
+    
+    percentagePrecip = numel(Fpixels)/(numel(Fpixels)+numel(Epixels));
+    fprintf(strcat('|E|/|EuF| = ',num2str(percentagePrecip),'\n'));
 
-probOfData = 0;
-probOfLabelSets = zeros(1,3);
-probOfTargetLabel = zeros(1,3);
-for i = 1:3
-    curInds = find(realLabels==i);
-    for j = 1:length(curInds)
-        currentIndex = curInds(j);
-       mm = labelsTest(currentIndex);
-       
-       curElementProb = biCur(mm,currentIndex);
-       curTargetProb = biCur(i,currentIndex);
-       
-       
-       probOfData = probOfData + curElementProb;
-       probOfLabelSets(i) = probOfLabelSets(i) + curElementProb;
-       probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb;
+    if(numel(Fpixels)<1)
+       continue 
     end
-    probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
-    probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
+    probOfData = 0;
+    probOfLabelSets = zeros(1,3);
+    probOfTargetLabel = zeros(1,3);
+    for i = 1:3
+        curInds = find(realLabels==i);
+        for j = 1:length(curInds)
+            currentIndex = curInds(j);
+           mm = labelsTest(currentIndex);
+
+           curElementProb = biCur(mm,currentIndex);
+           curTargetProb = biCur(i,currentIndex);
+
+
+           probOfData = probOfData + curElementProb;
+           probOfLabelSets(i) = probOfLabelSets(i) + curElementProb; %does not really tell us much
+           probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb; %REPORT THIS*****
+        end
+        probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
+        probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
+    end
+    avgProb = probOfData/size(biCur,2);
+
+    impPixels = find(realLabels>1);
+    [rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
+    fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
+    aucInfo(numToSee)=rocAuc;
+    
+    %{
+    figure
+    hold on
+    title(strcat('ROC curve for ',num2str(numToSee)));
+    plot(rocx,rocy,'r-');
+    plot(0:0.05:1,0:0.05:1,'b--');
+    hold off
+    pause(1);
+    drawnow
+    %}
 end
-avgProb = probOfData/size(biCur,2);
+%%
 
+%NOTE: NEARLY ALL MAPS HAVE AUC > 0.5, AS SHOWN IN THE PLOT
+%   PRESENT THIS RESULT AT NEXT MEETING WITH IHLER
+load('domkeRun19_auc.mat')
+%plot(aucInfo)
+%plot(sort(aucInfo))
+aucInfo2 = aucInfo(aucInfo>0);
+plot(sort(aucInfo2))
+%%
 
+%TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-
-impPixels = find(realLabels>1);
-[rocx,rocy] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
-figure
-plot(rocx,rocy);
-
+numToSee = 4;
+biCur = biArrays{numToSee};
 bi1re=reshape(biCur(1,:),sizr,sizc);
 bi2re=reshape(biCur(2,:),sizr,sizc);
 bi3re=reshape(biCur(3,:),sizr,sizc);
+
 figure
+imagesc(labels_test{numToSee}); colorbar;
+title('Labels');
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+figure
+subplot(1,3,1);
 imagesc(bi1re); colorbar;
+title('Probability of Label 1');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
-figure
+subplot(1,3,2);
 imagesc(bi2re); colorbar;
+title('Probability of Label 2');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
-figure
+subplot(1,3,3);
 imagesc(bi3re); colorbar;
+title('Probability of Label 3');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+indsGset = find(labels_test{numToSee}==1);
+bi1OnlyG = zeros(sizr,sizc);
+bi1OnlyG(indsGset)=bi1re(indsGset);
+figure
+subplot(1,3,1);
+imagesc(bi1OnlyG); colorbar;
+title('Probability of Label 1 among only those pixels');
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+indsEset = find(labels_test{numToSee}==2);
+bi2OnlyE = zeros(sizr,sizc);
+bi2OnlyE(indsEset)=bi2re(indsEset);
+subplot(1,3,2);
+imagesc(bi2OnlyE); colorbar;
+title('Probability of Label 2 among only E pixels');
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+indsFset = find(labels_test{numToSee}==3);
+bi3OnlyF = zeros(sizr,sizc);
+bi3OnlyF(indsFset)=bi3re(indsFset);
+subplot(1,3,3);
+imagesc(bi3OnlyF); colorbar;
+title('Probability of Label 3 among only F pixels');
+drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+
+
+
 %%
 
 b2v2 = [];
