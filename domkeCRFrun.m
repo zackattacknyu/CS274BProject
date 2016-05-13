@@ -151,7 +151,7 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %SHOW AVERAGE PROBABILITY OF CLASS 2 AND 3 AMONG THOSE PIXELS
 aucInfo = zeros(1,length(feats_test));
 %priors = [1;0.02;10];
-for numToSee = 1:10;
+for numToSee = 10%1:10;
     biCur = biArrays{numToSee};
     
     %multiply by prior, then normalize. 
@@ -181,6 +181,7 @@ for numToSee = 1:10;
     probOfData = 0;
     probOfLabelSets = zeros(1,3);
     probOfTargetLabel = zeros(1,3);
+    expectedValues = zeros(1,3); %expected state value in set
     for i = 1:3
         curInds = find(realLabels==i);
         for j = 1:length(curInds)
@@ -189,7 +190,10 @@ for numToSee = 1:10;
 
            curElementProb = biCur(mm,currentIndex);
            curTargetProb = biCur(i,currentIndex);
-
+           
+           biCurMod = biCur(2:3,currentIndex)./(1-biCur(1,currentIndex));
+           currentExpValue = sum(biCurMod.*[2;3]);
+           expectedValues(i) = expectedValues(i) + currentExpValue;
 
            probOfData = probOfData + curElementProb;
            probOfLabelSets(i) = probOfLabelSets(i) + curElementProb; %does not really tell us much
@@ -197,6 +201,7 @@ for numToSee = 1:10;
         end
         probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
         probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
+        expectedValues(i) = expectedValues(i)/numel(curInds);
     end
     avgProb = probOfData/size(biCur,2);
 
