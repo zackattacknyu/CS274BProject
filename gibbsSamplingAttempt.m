@@ -27,11 +27,14 @@ end
 
 %%
 
-%EXAMPLE VAR ELIM CODE I WILL NEED TO USE
-%FIX THIS CODE
-%{
 bij1 = reshape(b_ij(:,1),3,3); %IJ MATRIX
 bij2 = reshape(b_ij(:,501),3,3); %IK MATRIX
+
+bij1givenJ = bij1./repmat(sum(bij1,1),3,1);
+bij2givenJ = bij2./repmat(sum(bij2,1),3,1);
+
+curJ = 1;
+newBi = bij1givenJ(:,curJ).*bij2givenJ(:,curJ);
 
 pIafter1 = sum(bij1,2); %eliminate j variable
 
@@ -40,7 +43,7 @@ newIKmatrix = bij2.*(repmat(pIafter1,1,3));
 %normalize the columns
 newIKmatrix2 = newIKmatrix./repmat(sum(newIKmatrix,1),3,1);
 pIafter2 = sum(newIKmatrix2,2); %eliminate k variable
-%}
+
 
 %WORKS, BUT NOT SCALABLE ATM
 ijkMatrix = b_ij(:,1)*b_ij(:,501)';
