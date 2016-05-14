@@ -3,50 +3,43 @@ curModelNum = 6;
 curModel = models_test{curModelNum};
 curModelPairs = curModel.pairs;
 
-curNeighborsAsI = curModel.N1;
-curNeighborsAsJ = curModel.N2;
+cliqueIndAsI = curModel.N1;
+cliqueIndAsJ = curModel.N2;
 
-nodeNum = 1;
+nodeNum = 1250;
 
-pairsAsI = curNeighborsAsI(nodeNum,:);
-pairsAsI = pairsAsI(pairsAsI>0);
-pairsAsJ = curNeighborsAsJ(nodeNum,:);
-pairsAsJ = pairsAsJ(pairsAsJ>0);
+curIcliques = cliqueIndAsI(nodeNum,:);
+curIcliques = curIcliques(curIcliques>0);
+curJcliques = cliqueIndAsJ(nodeNum,:);
+curJcliques = curJcliques(curJcliques>0);
 
-%Forward Neighbors
-for i = 1:length(pairsAsI)
-    curPair = curModelPairs(pairsAsI(i),:);
-    curNeigh = curPair(2);
-end
+currentBi = ones(1,3);
+jValues = [2 3];
+iValues = [3 3];
 
 %Backward Neighbors
-for j = 1:length(pairsAsJ)
-    curPair2 = curModelPairs(pairsAsJ(j),:);
-    curNeigh = curPair(1);
+for j = 1:length(curJcliques)
+       
+    curClique = curJcliques(i);
+    %curPair2 = curModelPairs(curJcliques(j),:)
+    %curNeigh = curPair(1);
+    
+    curI = iValues(i);
+    currentBij = reshape(b_ij(:,curClique),3,3);
+    currentBijGivenI = currentBij./repmat(sum(currentBij,2),1,3);
+    currentBi = currentBi.*currentBijGivenI(curI,:);
+end
+currentBi = currentBi';
+
+%Forward Neighbors
+for i = 1:length(curIcliques)
+    curClique = curIcliques(i);
+    %curPair = curModelPairs(curIcliques(i),:)
+    curNeigh = curPair(2);
+    
+    curJ = jValues(i);
+    currentBij = reshape(b_ij(:,curClique),3,3);
+    currentBijGivenJ = currentBij./repmat(sum(currentBij,1),3,1);
+    currentBi = currentBi.*currentBijGivenJ(:,curJ);
 end
 
-%%
-
-bij1 = reshape(b_ij(:,1),3,3); %IJ MATRIX
-bij2 = reshape(b_ij(:,501),3,3); %IK MATRIX
-
-bij1givenJ = bij1./repmat(sum(bij1,1),3,1);
-bij2givenJ = bij2./repmat(sum(bij2,1),3,1);
-
-curJ = 1;
-newBi = bij1givenJ(:,curJ).*bij2givenJ(:,curJ);
-
-pIafter1 = sum(bij1,2); %eliminate j variable
-
-newIKmatrix = bij2.*(repmat(pIafter1,1,3));
-
-%normalize the columns
-newIKmatrix2 = newIKmatrix./repmat(sum(newIKmatrix,1),3,1);
-pIafter2 = sum(newIKmatrix2,2); %eliminate k variable
-
-
-%WORKS, BUT NOT SCALABLE ATM
-ijkMatrix = b_ij(:,1)*b_ij(:,501)';
-ijMatrix = reshape(sum(ijkMatrix,2),3,3);
-iMatrix = sum(ijMatrix,2);
-diff = sum(abs(iMatrix-b_i(:,1))); %UNIT TEST OF VAR ELIM
