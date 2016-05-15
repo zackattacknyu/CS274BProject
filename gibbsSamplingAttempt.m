@@ -1,61 +1,114 @@
 
-curModelNum = 3;
+curModelNum = 4;
 curModel = models_test{curModelNum};
 curModelPairs = curModel.pairs;
 
 cliqueIndAsI = curModel.N1;
 cliqueIndAsJ = curModel.N2;
-%%
 
 sizr = 500; sizc = 750;
-initialY = ceil(rand(sizr,sizc)*3);
-imagesc(initialY);colorbar;
+previousY = ceil(rand(sizr,sizc)*2)+1;
+%previousY = ones(sizr,sizc).*3;
+%imagesc(previousY);colorbar;
 
-%%
+targetLabels = labels_test{curModelNum};
 
-%nodeNum = 12500;
-%nodeNum = 271001; %greatest class 3 prob
-nodeNum = 271041;
-%nodeNum = 77123; %greatest class 2 prob
-
-curIcliques = cliqueIndAsI(nodeNum,:);
-curIcliques = curIcliques(curIcliques>0);
-curJcliques = cliqueIndAsJ(nodeNum,:);
-curJcliques = curJcliques(curJcliques>0);
-
-currentBi = ones(1,3);
-jValues = [1 2];
-iValues = [3 3];
-
-%Backward Neighbors, use current values
-for j = 1:length(curJcliques)
-       
-    curClique = curJcliques(j);
-    curPair2 = curModelPairs(curJcliques(j),:);
-    curNeighIndex = curPair2(1)
+numIter=12;
+sampledImages = cell(1,numIter);
+currentY = zeros(sizr,sizc);
+for iterNum=1:numIter
     
-    curI = iValues(j);
-    currentBij = reshape(b_ij(:,curClique),3,3);
-    currentBijGivenI = currentBij./repmat(sum(currentBij,2),1,3);
-    currentBi = currentBi.*currentBijGivenI(curI,:);
-end
-currentBi = currentBi';
+    fprintf('Now processing iteration %d of %d\n',iterNum,numIter);
+    for nodeNum = 1:numel(previousY)
 
-%Forward Neighbors, use previous values
-for i = 1:length(curIcliques)
-    curClique = curIcliques(i);
-    curPair = curModelPairs(curIcliques(i),:);
-    curNeighIndex = curPair(2)
+        if(mod(nodeNum,10000)==0) 
+           fprintf('%d of %d nodes have been processed\n',nodeNum,numel(previousY)); 
+        end
+        
+        %if node is automatically supposed to be 1 from test info
+        if(targetLabels(nodeNum)<2)
+            currentY(nodeNum)=1;
+            continue;
+        end
+
+        curIcliques = cliqueIndAsI(nodeNum,:);
+        curIcliques = curIcliques(curIcliques>0);
+        curJcliques = cliqueIndAsJ(nodeNum,:);
+        curJcliques = curJcliques(curJcliques>0);
+
+        currentBi = ones(1,3);
+        %jValues = [1 2];
+        %iValues = [3 3];
+
+        %Backward Neighbors, use current values
+        for j = 1:length(curJcliques)
+
+            curClique = curJcliques(j);
+            curPair2 = curModelPairs(curJcliques(j),:);
+            curNeighIndex = curPair2(1);
+
+            %curI = iValues(j);
+            if(targetLabels(curNeighIndex)<2)
+                curI=1;
+            else
+                curI = currentY(curNeighIndex);
+            end
+            
+
+            currentBij = reshape(b_ij(:,curClique),3,3);
+            currentBijGivenI = currentBij./repmat(sum(currentBij,2),1,3);
+            currentBi = currentBi.*currentBijGivenI(curI,:);
+        end
+        currentBi = currentBi';
+        currentBi = currentBi./sum(currentBi);
+
+        %Forward Neighbors, use previous values
+        for i = 1:length(curIcliques)
+            curClique = curIcliques(i);
+            curPair = curModelPairs(curIcliques(i),:);
+            curNeighIndex = curPair(2);
+
+            %curJ = jValues(i);
+            if(targetLabels(curNeighIndex)<2)
+                curJ=1;
+            else
+                curJ = previousY(curNeighIndex);
+            end
+            
+
+            currentBij = reshape(b_ij(:,curClique),3,3);
+            currentBijGivenJ = currentBij./repmat(sum(currentBij,1),3,1);
+            currentBi = currentBi.*currentBijGivenJ(:,curJ);
+        end
+
+        newProbXi = currentBi./sum(currentBi);
+        
+        %incorporate fact that Xi~=1
+        newProbXi = newProbXi(2:3);
+        newProbXi = newProbXi./sum(newProbXi);
+
+        %attach bad prior
+        %newProbXi = newProbXi.*[0.2;0.8];
+        %newProbXi = newProbXi./sum(newProbXi);
+        
+        %sample from the conditional distribution
+        randSample = rand;
+        randLabel = find(randSample<cumsum(newProbXi),1,'first');
+
+        %currentY(nodeNum)=randLabel;
+        currentY(nodeNum)=randLabel+1;
+    end
     
-    curJ = jValues(i);
-    currentBij = reshape(b_ij(:,curClique),3,3);
-    currentBijGivenJ = currentBij./repmat(sum(currentBij,1),3,1);
-    currentBi = currentBi.*currentBijGivenJ(:,curJ);
+    sampledImages{iterNum} = currentY;
+    previousY = currentY;
 end
 
-newProbXi = currentBi./sum(currentBi);
+numIterShow=9;
+figure
+for i = 1:numIterShow
+   subplot(3,3,i);
+   imagesc(sampledImages{i});
+   colorbar;
+end
 
-%sample from the conditional distribution
-randSample = rand;
-randLabel = find(randSample<cumsum(newProbXi),1,'first');
 

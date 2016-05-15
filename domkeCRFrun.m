@@ -60,17 +60,24 @@ load('domkeCRFrun19','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 10;
+numRandInds = 5;
 
 load('highestPrecipInds1209');
-%trialInds2 = highestPrecipInds(1:numRandInds);
-trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+trialInds2 = highestPrecipInds(1:numRandInds);
+%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
     obtainDataFromFiles(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
 cutoff = 0.85;
+%%
+
+figure
+for i = 1:10
+    subplot(2,5,i);
+    imagesc(labels_test{i}); colorbar;
+end
 %%
 fprintf('get the marginals for test images...\n');
 close all
@@ -79,7 +86,7 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 biArrays = cell(1,length(feats_test));
-for n=6%1:length(feats_test)
+for n=4%1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -100,12 +107,12 @@ for n=6%1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.85%0.4:0.05:0.95
+    for cutoff = 0.7547%0.4:0.05:0.95
         
-        %x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
+        x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
         %samples from the distribution
-        x_pred = getPredLabelsRand(b_i,sizr,sizc,testPixels);
+        %x_pred = getPredLabelsRand(b_i,sizr,sizc,testPixels);
 
         xpredResults = x_pred(testPixels);
         
@@ -123,7 +130,7 @@ for n=6%1:length(feats_test)
         fprintf('Percent Pred Pixels Correct %f\n\n',...
             length(find(x_pred(precipPixels)==3))/numel(precipPixels));
         fprintf('Baseline error (predict all 0): %f \n',Base(n)/T(n));
-        %displayTargetPred(x_pred,curTargetLabels);
+        displayTargetPred(x_pred,curTargetLabels);
     end
     
     
@@ -151,7 +158,7 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %SHOW AVERAGE PROBABILITY OF CLASS 2 AND 3 AMONG THOSE PIXELS
 aucInfo = zeros(1,length(feats_test));
 %priors = [1;0.02;10];
-for numToSee = 10%1:10;
+for numToSee = 4;
     biCur = biArrays{numToSee};
     
     %multiply by prior, then normalize. 
@@ -191,7 +198,7 @@ for numToSee = 10%1:10;
            curElementProb = biCur(mm,currentIndex);
            curTargetProb = biCur(i,currentIndex);
            
-           biCurMod = biCur(2:3,currentIndex)./(1-biCur(1,currentIndex));
+           biCurMod = biCur(2:3,currentIndex)./(sum(biCur(2:3,currentIndex)));
            currentExpValue = sum(biCurMod.*[2;3]);
            expectedValues(i) = expectedValues(i) + currentExpValue;
 
@@ -206,20 +213,39 @@ for numToSee = 10%1:10;
     avgProb = probOfData/size(biCur,2);
 
     impPixels = find(realLabels>1);
-    [rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),biCur(3,impPixels),3);
+    sumProbs = sum(biCur(2:3,impPixels));
+    scores = biCur(3,impPixels)./sumProbs;
+    [rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),scores,3);
     fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
     aucInfo(numToSee)=rocAuc;
     
-    %{
+    
     figure
     hold on
-    title(strcat('ROC curve for ',num2str(numToSee)));
+    %title(strcat('ROC curve for ',num2str(numToSee)));
+    title('ROC curve');
     plot(rocx,rocy,'r-');
     plot(0:0.05:1,0:0.05:1,'b--');
+    xlabel('False Positive Rate');
+    ylabel('True Positive Rate');
     hold off
     pause(1);
     drawnow
-    %}
+    
+    figure
+    hold on
+    %title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
+    title('Threshold versus True Positive Rate');
+    plot(rocThr,rocy,'r-');
+    xlabel('Score Threshold for Class 3');
+    ylabel('True Positive Rate');
+    hold off
+    pause(1);
+    drawnow
+    
+    desiredTruePositive = 0.7;
+    ind = find(rocy>desiredTruePositive,1,'first');
+    thresholdUse = rocThr(ind);
 end
 %%
 
@@ -236,9 +262,18 @@ plot(sort(aucInfo2))
 
 numToSee = 4;
 biCur = biArrays{numToSee};
-bi1re=reshape(biCur(1,:),sizr,sizc);
-bi2re=reshape(biCur(2,:),sizr,sizc);
-bi3re=reshape(biCur(3,:),sizr,sizc);
+normFactors23 = sum(biCur(2:3,:));
+
+%IF DOING UNNORMALIZED BY CLASS 1 PROBS
+%bi1re=reshape(biCur(1,:),sizr,sizc);
+%bi2re=reshape(biCur(2,:),sizr,sizc);
+%bi3re=reshape(biCur(3,:),sizr,sizc);
+
+%IF DOING NORMALIZATION BY CLASS 1 PROBS
+bi1re=reshape(biCur(1,:)./normFactors23,sizr,sizc);
+bi2re=reshape(biCur(2,:)./normFactors23,sizr,sizc);
+bi3re=reshape(biCur(3,:)./normFactors23,sizr,sizc);
+
 
 figure
 imagesc(labels_test{numToSee}); colorbar;
@@ -246,17 +281,17 @@ title('Labels');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 figure
-subplot(1,3,1);
-imagesc(bi1re); colorbar;
-title('Probability of Label 1');
-drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+%subplot(1,3,1);
+%imagesc(bi1re); colorbar;
+%title('Probability of Label 1');
+%drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
-subplot(1,3,2);
+subplot(1,2,1);
 imagesc(bi2re); colorbar;
 title('Probability of Label 2');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
-subplot(1,3,3);
+subplot(1,2,2);
 imagesc(bi3re); colorbar;
 title('Probability of Label 3');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
@@ -265,25 +300,25 @@ indsGset = find(labels_test{numToSee}==1);
 bi1OnlyG = zeros(sizr,sizc);
 bi1OnlyG(indsGset)=bi1re(indsGset);
 figure
-subplot(1,3,1);
-imagesc(bi1OnlyG); colorbar;
-title('Probability of Label 1 among only those pixels');
-drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
+%subplot(1,3,1);
+%imagesc(bi1OnlyG); colorbar;
+%title('Probability of Label 1 among only those pixels');
+%drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 indsEset = find(labels_test{numToSee}==2);
 bi2OnlyE = zeros(sizr,sizc);
 bi2OnlyE(indsEset)=bi2re(indsEset);
-subplot(1,3,2);
+subplot(1,2,1);
 imagesc(bi2OnlyE); colorbar;
-title('Probability of Label 2 among only E pixels');
+title('P(y_i = 2 | y_i \neq 1) for i \in E, 0 otherwise');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 indsFset = find(labels_test{numToSee}==3);
 bi3OnlyF = zeros(sizr,sizc);
 bi3OnlyF(indsFset)=bi3re(indsFset);
-subplot(1,3,3);
+subplot(1,2,2);
 imagesc(bi3OnlyF); colorbar;
-title('Probability of Label 3 among only F pixels');
+title('P(y_i = 3 | y_i \neq 1) for i \in F, 0 otherwise');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 
