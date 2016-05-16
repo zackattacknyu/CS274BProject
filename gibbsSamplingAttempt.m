@@ -1,5 +1,5 @@
 
-curModelNum = 4;
+curModelNum = 1;
 curModel = models_test{curModelNum};
 curModelPairs = curModel.pairs;
 
@@ -7,13 +7,14 @@ cliqueIndAsI = curModel.N1;
 cliqueIndAsJ = curModel.N2;
 
 sizr = 500; sizc = 750;
-previousY = ceil(rand(sizr,sizc)*2)+1;
+previousY = x_pred;
+%previousY = ceil(rand(sizr,sizc)*2)+1;
 %previousY = ones(sizr,sizc).*3;
 %imagesc(previousY);colorbar;
 
 targetLabels = labels_test{curModelNum};
 
-numIter=12;
+numIter=30;
 sampledImages = cell(1,numIter);
 currentY = zeros(sizr,sizc);
 for iterNum=1:numIter
@@ -88,8 +89,8 @@ for iterNum=1:numIter
         newProbXi = newProbXi./sum(newProbXi);
 
         %attach bad prior
-        %newProbXi = newProbXi.*[0.2;0.8];
-        %newProbXi = newProbXi./sum(newProbXi);
+        newProbXi = newProbXi.*[0.2;0.8];
+        newProbXi = newProbXi./sum(newProbXi);
         
         %sample from the conditional distribution
         randSample = rand;
@@ -99,14 +100,19 @@ for iterNum=1:numIter
         currentY(nodeNum)=randLabel+1;
     end
     
-    sampledImages{iterNum} = currentY;
+    if(mod(iterNum,5)==0)
+        sampledImages{iterNum} = currentY;
+    end
+    
     previousY = currentY;
 end
-
-numIterShow=9;
+%%
+numIterShow=30;
+ind=1;
 figure
-for i = 1:numIterShow
-   subplot(3,3,i);
+for i = 5:5:numIterShow
+   subplot(2,3,ind);
+   ind = ind+1
    imagesc(sampledImages{i});
    colorbar;
 end

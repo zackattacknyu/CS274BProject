@@ -186,12 +186,18 @@ for numToSee = 1%4;
     if(numel(Fpixels)<1)
        continue 
     end
-    probOfData = 0;
+    probOfData = zeros(1,3);
     probOfLabelSets = zeros(1,3);
     probOfTargetLabel = zeros(1,3);
+    totalTargetProb = zeros(1,3);
+    totalProb2 = zeros(1,3);
+    totalProb3 = zeros(1,3);
+    numInSet = zeros(1,3);
     expectedValues = zeros(1,3); %expected state value in set
+    totalExpValues = zeros(1,3);
     for i = 1:3
         curInds = find(realLabels==i);
+        numInSet(i) = numel(curInds);
         for j = 1:length(curInds)
             currentIndex = curInds(j);
            mm = labelsTest(currentIndex);
@@ -201,18 +207,29 @@ for numToSee = 1%4;
            
            biCurMod = biCur(2:3,currentIndex)./(sum(biCur(2:3,currentIndex)));
            currentExpValue = sum(biCurMod.*[2;3]);
+           
            expectedValues(i) = expectedValues(i) + currentExpValue;
-
-           probOfData = probOfData + curElementProb;
+            totalExpValues(i) = totalExpValues(i) + currentExpValue;
+           
+           probOfData(i) = probOfData(i) + curElementProb;
            probOfLabelSets(i) = probOfLabelSets(i) + curElementProb; %does not really tell us much
+           
            probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb; %REPORT THIS*****
+           totalTargetProb(i) = totalTargetProb(i) + curTargetProb;
+           
+           totalProb2(i) = totalProb2(i) + biCurMod(1);
+           totalProb3(i) = totalProb3(i) + biCurMod(2);
         end
         probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
         probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
         expectedValues(i) = expectedValues(i)/numel(curInds);
     end
-    avgProb = probOfData/size(biCur,2);
-
+    
+    avgProb = sum(probOfData)/size(biCur,2);
+    avgProb23 = sum(probOfData(2:3))/(numInSet(2)+numInSet(3));
+    
+    avgTargetProb23 = sum(totalTargetProb(2:3))/(numInSet(2)+numInSet(3));
+    
     impPixels = find(realLabels>1);
     sumProbs = sum(biCur(2:3,impPixels));
     
@@ -272,7 +289,7 @@ ylabel('AUC');
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-numToSee = 4;
+numToSee = 1;
 biCur = biArrays{numToSee};
 normFactors23 = sum(biCur(2:3,:));
 
@@ -320,17 +337,22 @@ figure
 indsEset = find(labels_test{numToSee}==2);
 bi2OnlyE = zeros(sizr,sizc);
 bi2OnlyE(indsEset)=bi2re(indsEset);
+bi3OnlyE = zeros(sizr,sizc);
+bi3OnlyE(indsEset)=bi3re(indsEset);
 subplot(1,2,1);
 imagesc(bi2OnlyE); colorbar;
+%imagesc(bi3OnlyE); colorbar;
 title('P(y_i = 2 | y_i \neq 1) for i \in E, 0 otherwise');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 indsFset = find(labels_test{numToSee}==3);
 bi3OnlyF = zeros(sizr,sizc);
 bi3OnlyF(indsFset)=bi3re(indsFset);
+bi2OnlyF = zeros(sizr,sizc);
+bi2OnlyF(indsFset)=bi2re(indsFset);
 subplot(1,2,2);
-imagesc(bi3OnlyF); colorbar;
-title('P(y_i = 3 | y_i \neq 1) for i \in F, 0 otherwise');
+imagesc(bi2OnlyF); colorbar;
+title('P(y_i = 2 | y_i \neq 1) for i \in F, 0 otherwise');
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 
 
