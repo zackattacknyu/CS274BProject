@@ -63,8 +63,9 @@ totalN2 = length(xFiles12);
 numRandInds = 5;
 
 load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
+%trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+trialInds2 = [1196];
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
     obtainDataFromFiles(trialInds2,...
@@ -86,7 +87,7 @@ T = zeros(1,length(feats_test));
 Base = zeros(1,length(feats_test));
 CCS = zeros(1,length(feats_test));
 biArrays = cell(1,length(feats_test));
-for n=4%1:length(feats_test)
+for n=1:length(feats_test)
     [b_i b_ij] = eval_crf(p,feats_test{n},efeats_test{n},models_test{n},loss_spec,crf_type,rho);
     %[b_i b_ij] = eval_crf(p,feats_test{n},[],models_test{n},loss_spec,crf_type,rho);
     
@@ -107,7 +108,7 @@ for n=4%1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.7547%0.4:0.05:0.95
+    for cutoff = 0.75%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
@@ -158,7 +159,7 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %SHOW AVERAGE PROBABILITY OF CLASS 2 AND 3 AMONG THOSE PIXELS
 aucInfo = zeros(1,length(feats_test));
 %priors = [1;0.02;10];
-for numToSee = 4;
+for numToSee = 1%4;
     biCur = biArrays{numToSee};
     
     %multiply by prior, then normalize. 
@@ -214,8 +215,15 @@ for numToSee = 4;
 
     impPixels = find(realLabels>1);
     sumProbs = sum(biCur(2:3,impPixels));
+    
+    %GETS TRUE AND FALSE POSITIVE
     scores = biCur(3,impPixels)./sumProbs;
     [rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),scores,3);
+    
+    %GETS TRUE AND FALSE NEGATIVE
+    %scores = biCur(2,impPixels)./sumProbs;
+    %[rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),scores,2);
+    
     fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
     aucInfo(numToSee)=rocAuc;
     
@@ -235,10 +243,12 @@ for numToSee = 4;
     figure
     hold on
     %title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
-    title('Threshold versus True Positive Rate');
+    title('Threshold versus True/False Positive Rate');
     plot(rocThr,rocy,'r-');
+    plot(rocThr,rocx,'b-');
+    legend('True Positive','False Positive');
     xlabel('Score Threshold for Class 3');
-    ylabel('True Positive Rate');
+    ylabel('Rate');
     hold off
     pause(1);
     drawnow
@@ -256,6 +266,8 @@ load('domkeRun19_auc.mat')
 %plot(sort(aucInfo))
 aucInfo2 = aucInfo(aucInfo>0);
 plot(sort(aucInfo2))
+xlabel('Map Number (ordered by AUC)');
+ylabel('AUC');
 %%
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER

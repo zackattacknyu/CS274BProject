@@ -40,7 +40,7 @@ load('domkeCRFrun19','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 100;
+numRandInds = 150;
 
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
@@ -70,6 +70,8 @@ end
 
 %TODO: MORE PROBABILISTIC TESTS HERE
 aucInfo = zeros(1,length(feats_test));
+allLabels = [];
+allScores = [];
 for numToSee = 1:length(feats_test);
     biCur = biArrays{numToSee};
     realLabels = labels_test{numToSee};
@@ -102,11 +104,14 @@ for numToSee = 1:length(feats_test);
 
            curElementProb = biCur(mm,currentIndex);
            curTargetProb = biCur(i,currentIndex);
-
+           
+           biCurMod = biCur(2:3,currentIndex)./(sum(biCur(2:3,currentIndex)));
+           currentExpValue = sum(biCurMod.*[2;3]);
+           %expectedValues(i) = expectedValues(i) + currentExpValue;
 
            probOfData = probOfData + curElementProb;
-           probOfLabelSets(i) = probOfLabelSets(i) + curElementProb;
-           probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb;
+           probOfLabelSets(i) = probOfLabelSets(i) + curElementProb; %does not really tell us much
+           probOfTargetLabel(i) = probOfTargetLabel(i) + curTargetProb; %REPORT THIS*****
         end
         probOfLabelSets(i) = probOfLabelSets(i)/numel(curInds);
         probOfTargetLabel(i) = probOfTargetLabel(i)/numel(curInds);
@@ -118,4 +123,35 @@ for numToSee = 1:length(feats_test);
     fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
     aucInfo(numToSee)=rocAuc;
 
+    allLabels = [allLabels realLabels(impPixels)'];
+    allScores = [allScores biCur(3,impPixels)];
 end
+
+[rocx,rocy,rocThr,rocAuc] = perfcurve(allLabels,allScores,3);
+
+save('rocInfo_multipleMaps','rocx','rocy','rocThr','rocAuc');
+%%
+figure
+hold on
+%title(strcat('ROC curve for ',num2str(numToSee)));
+title('ROC curve');
+plot(rocx,rocy,'r-');
+plot(0:0.05:1,0:0.05:1,'b--');
+xlabel('False Positive Rate');
+ylabel('True Positive Rate');
+hold off
+pause(1);
+drawnow
+%%
+figure
+hold on
+%title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
+title('Threshold versus True/False Positive Rate');
+plot(rocThr,rocy,'r-');
+plot(rocThr,rocx,'b-');
+legend('True Positive','False Positive');
+xlabel('Score Threshold for Class 3');
+ylabel('Rate');
+hold off
+pause(1);
+drawnow
