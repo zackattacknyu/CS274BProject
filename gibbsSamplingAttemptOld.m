@@ -14,13 +14,6 @@ previousY = x_pred;
 
 targetLabels = labels_test{curModelNum};
 
-curFeats = feats_test{1};
-curFeatsEdges = efeats_test{1};
-
-nodePotentials = exp(curFeats*p.F');
-edgePotentials = exp(curFeatsEdges*p.G');
-
-%%
 numIter=30;
 sampledImages = cell(1,numIter);
 currentY = zeros(sizr,sizc);
@@ -34,12 +27,10 @@ for iterNum=1:numIter
         end
         
         %if node is automatically supposed to be 1 from test info
-        %if(targetLabels(nodeNum)<2)
-        %    currentY(nodeNum)=1;
-        %    continue;
-        %end
-        
-        
+        if(targetLabels(nodeNum)<2)
+            currentY(nodeNum)=1;
+            continue;
+        end
 
         curIcliques = cliqueIndAsI(nodeNum,:);
         curIcliques = curIcliques(curIcliques>0);

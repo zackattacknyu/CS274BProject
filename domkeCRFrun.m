@@ -433,3 +433,25 @@ legend('p(y_i=2) for i \in E','p(y_i=3) for i \in E',...
 hold off
 %}
 %}
+%%
+
+
+xx1 = feats_test{1}(1,:);
+xx2 = feats_test{1}(2,:);
+xy1 = efeats_test{n}(1,:);
+
+pot1 = exp(p.F*xx1');
+pot2 = exp(p.F*xx2');
+pot12 = exp(p.G*xy1');
+
+pot12Matrix = reshape(pot12,3,3);
+
+newMatrix = zeros(3,3);
+for j = 1:3
+   for k = 1:3
+      newMatrix(j,k)=pot12Matrix(j,k)*pot1(j)*pot2(k); 
+   end
+end
+
+newBij = newMatrix(:);
+newBij = newBij./sum(newBij);
