@@ -17,8 +17,49 @@ targetLabels = labels_test{curModelNum};
 curFeats = feats_test{1};
 curFeatsEdges = efeats_test{1};
 
-nodePotentials = exp(curFeats*p.F');
-edgePotentials = exp(curFeatsEdges*p.G');
+nodeLogPotentials = curFeats*p.F';
+edgeLogPotentials = curFeatsEdges*p.G';
+%%
+
+currentLogPotential = zeros(1,3);
+testNode = 129672;
+
+for testNodeValue = 1:3
+   currentNodePotential = ...
+       nodeLogPotentials(testNode,testNodeValue);
+   currentLogPotential(testNodeValue) = currentLogPotential(testNodeValue)...
+       + currentNodePotential;
+end
+
+
+for edge = 1:size(edgeLogPotentials,1)
+   node1 = curModelPairs(edge,1);
+   node2 = curModelPairs(edge,2);
+   logPotMatrix = reshape(edgePotentials(edge,:),3,3);
+   
+   for testNodeValue = 1:3
+        if(node1==testNode)
+          node2value = previousY(node2);
+          curEdgePot = logPotMatrix(testNodeValue,node2value);
+          currentLogPotential(testNodeValue) = ...
+              currentLogPotential(testNodeValue) + curEdgePot;
+
+       end
+
+       if(node2==testNode)
+          node1value = previousY(node1);
+          curEdgePot = logPotMatrix(node1value,testNodeValue);
+          currentLogPotential(testNodeValue) = ...
+              currentLogPotential(testNodeValue) + curEdgePot;
+
+       end
+   end
+   
+   
+end
+
+denom = sum(exp(currentLogPotential));
+probs = exp(currentLogPotential)./denom;
 
 %%
 numIter=30;
