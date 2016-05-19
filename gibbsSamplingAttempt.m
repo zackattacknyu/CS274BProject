@@ -24,44 +24,57 @@ edgeLogPotentials = curFeatsEdges*p.G';
 currentLogPotential = zeros(1,3);
 testNode = 129672;
 
-for testNodeValue = 1:3
-   currentNodePotential = ...
-       nodeLogPotentials(testNode,testNodeValue);
-   currentLogPotential(testNodeValue) = currentLogPotential(testNodeValue)...
-       + currentNodePotential;
+currentY = ones(size(targetLabels));
+for testNode = 1:numel(targetLabels)
+    
+    for testNodeValue = 1:3
+       currentNodePotential = ...
+           nodeLogPotentials(testNode,testNodeValue);
+       currentLogPotential(testNodeValue) = currentLogPotential(testNodeValue)...
+           + currentNodePotential;
+    end
+
+
+    for edge = 1:size(edgeLogPotentials,1)
+       node1 = curModelPairs(edge,1);
+       node2 = curModelPairs(edge,2);
+       logPotMatrix = reshape(edgePotentials(edge,:),3,3);
+
+       for testNodeValue = 1:3
+            if(node1==testNode)
+              node2value = previousY(node2);
+              curEdgePot = logPotMatrix(testNodeValue,node2value);
+              currentLogPotential(testNodeValue) = ...
+                  currentLogPotential(testNodeValue) + curEdgePot;
+
+           end
+
+           if(node2==testNode)
+              node1value = previousY(node1);
+              curEdgePot = logPotMatrix(node1value,testNodeValue);
+              currentLogPotential(testNodeValue) = ...
+                  currentLogPotential(testNodeValue) + curEdgePot;
+
+           end
+       end
+
+
+    end
+
+    denom = sum(exp(currentLogPotential));
+    probs = exp(currentLogPotential)./denom;
+    
+    randSample = rand;
+    randLabel = find(randSample<cumsum(probs),1,'first');
+
+    currentY(testNode)=randLabel;
+    %currentY(testNode)=randLabel+1;
+    
 end
 
 
-for edge = 1:size(edgeLogPotentials,1)
-   node1 = curModelPairs(edge,1);
-   node2 = curModelPairs(edge,2);
-   logPotMatrix = reshape(edgePotentials(edge,:),3,3);
-   
-   for testNodeValue = 1:3
-        if(node1==testNode)
-          node2value = previousY(node2);
-          curEdgePot = logPotMatrix(testNodeValue,node2value);
-          currentLogPotential(testNodeValue) = ...
-              currentLogPotential(testNodeValue) + curEdgePot;
 
-       end
-
-       if(node2==testNode)
-          node1value = previousY(node1);
-          curEdgePot = logPotMatrix(node1value,testNodeValue);
-          currentLogPotential(testNodeValue) = ...
-              currentLogPotential(testNodeValue) + curEdgePot;
-
-       end
-   end
-   
-   
-end
-
-denom = sum(exp(currentLogPotential));
-probs = exp(currentLogPotential)./denom;
-
-%%
+%{
 numIter=30;
 sampledImages = cell(1,numIter);
 currentY = zeros(sizr,sizc);
@@ -156,7 +169,7 @@ for iterNum=1:numIter
     
     previousY = currentY;
 end
-%%
+
 numIterShow=30;
 ind=1;
 figure
@@ -166,5 +179,5 @@ for i = 5:5:numIterShow
    imagesc(sampledImages{i});
    colorbar;
 end
-
+%}
 
