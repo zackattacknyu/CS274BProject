@@ -73,6 +73,7 @@ for n=1:length(feats_test)
 end
 
 %%
+
 curModelNum = 1;
 curModel = models_test{curModelNum};
 curModelPairs = curModel.pairs;
@@ -95,16 +96,25 @@ nodeLogPotentials = curFeats*p.F';
 edgeLogPotentials = curFeatsEdges*p.G';
 
 currentLogPotential = zeros(1,3);
-testNode = 129672;
 
-find(curModelPairs(:,1)==testNode)
-find(curModelPairs(:,2)==testNode)
-numIter=200;
+
+allNode1Edges = cell(1,numel(targetLabels));
+allNode2Edges = cell(1,numel(targetLabels));
+for testNode = 1:numel(targetLabels)
+    allNode1Edges{testNode} = find(curModelPairs(:,1)==testNode);
+    allNode2Edges{testNode} = find(curModelPairs(:,2)==testNode);
+    if(mod(testNode,1000)==0)
+       fprintf('%d Nodes Have Pairs Found\n',testNode); 
+    end
+end
+
+
+numIter=5000;
 
 iterationMaps = cell(1,numIter);
 currentY = ones(size(targetLabels));
 for iter = 1:numIter
-
+    tic
     fprintf('Now doing iteration %d\n',iter);
     for testNode = 1:numel(targetLabels)
 
@@ -127,8 +137,10 @@ for iter = 1:numIter
                + currentNodePotential;
         end
 
-        node1Edges = find(curModelPairs(:,1)==testNode);
-        node2Edges = find(curModelPairs(:,2)==testNode);
+        %node1Edges = find(curModelPairs(:,1)==testNode);
+        node1Edges = allNode1Edges{testNode};
+        node2Edges = allNode2Edges{testNode};
+        %node2Edges = find(curModelPairs(:,2)==testNode);
 
         for edgeI = 1:length(node1Edges)
             edge = node1Edges(edgeI);
@@ -180,8 +192,8 @@ for iter = 1:numIter
     end
     
     previousY = currentY;
-    
-    if(mod(iter,10)==0)
+    toc
+    if(mod(iter,200)==0)
         iterationMaps{iter} = currentY;
         save('currentIterMaps.mat','iterationMaps');
     end
