@@ -62,7 +62,7 @@ totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
 numRandInds = 5;
 
-load('highestPrecipInds1209');
+%load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 trialInds2 = [1196];
@@ -244,15 +244,18 @@ for numToSee = 1%4;
     fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
     aucInfo(numToSee)=rocAuc;
     
+    [ccsROCx,ccsROCy] = perfcurve(realLabels(impPixels),ccsResults,3);
     
     figure
     hold on
     %title(strcat('ROC curve for ',num2str(numToSee)));
     title('ROC curve');
     plot(rocx,rocy,'r-');
+    plot(ccsROCx(2),ccsROCy(2),'kx','LineWidth',2);
     plot(0:0.05:1,0:0.05:1,'b--');
     xlabel('False Positive Rate');
     ylabel('True Positive Rate');
+    legend('ROC curve','CCS Result','Baseline ROC');
     hold off
     pause(1);
     drawnow
