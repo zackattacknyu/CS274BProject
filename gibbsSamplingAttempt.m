@@ -7,7 +7,7 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
+addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
 yFiles11 = dir('projectData/ytarget1109*');
 xFiles11 = dir('projectData/xdata1109*');
@@ -309,4 +309,14 @@ for i = 5:5:numIterShow
    colorbar;
 end
 %}
+%%
 
+for ii = 1:length(iterationMaps)
+   curIter = iterationMaps{ii};
+   if(~isempty(curIter))
+      fprintf('Iteration Map %d \n',ii);
+      figure
+      imagesc(curIter);
+      colorbar;
+   end
+end

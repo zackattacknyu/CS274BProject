@@ -63,9 +63,11 @@ totalN2 = length(xFiles12);
 numRandInds = 5;
 
 %load('highestPrecipInds1209');
-%trialInds2 = highestPrecipInds(1:numRandInds);
-%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-trialInds2 = [1196];
+%trialInds2 = highestPrecipInds(6:numRandInds);
+
+trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+%in order of perceived goodness of pred
+%trialInds2 = [325 1114 1152 204 284 1196 1199];
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
     obtainDataFromFiles(trialInds2,...
