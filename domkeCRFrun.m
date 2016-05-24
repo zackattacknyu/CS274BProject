@@ -7,7 +7,7 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-%addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
+addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
 yFiles11 = dir('projectData/ytarget1109*');
 xFiles11 = dir('projectData/xdata1109*');
@@ -60,16 +60,16 @@ load('domkeCRFrun19','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 3;
 
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(6:numRandInds);
 
-trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 %in order of perceived goodness of pred
-%trialInds2 = [325 1114 1152 204 284 1196 1199];
+trialInds2 = [325 1114 1152 204 284 1196 1199];
 
-[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
+[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
@@ -161,7 +161,7 @@ fprintf('CCS error: %f \n',sum(CCS)/sum(T))
 %SHOW AVERAGE PROBABILITY OF CLASS 2 AND 3 AMONG THOSE PIXELS
 aucInfo = zeros(1,length(feats_test));
 %priors = [1;0.02;10];
-for numToSee = 1%4;
+for numToSee = 1:7
     biCur = biArrays{numToSee};
     
     %multiply by prior, then normalize. 
@@ -246,32 +246,37 @@ for numToSee = 1%4;
     fprintf(strcat('ROC AUC = ',num2str(rocAuc),'\n\n'));
     aucInfo(numToSee)=rocAuc;
     
-    [ccsROCx,ccsROCy] = perfcurve(realLabels(impPixels),ccsResults,3);
+    ccsResults = ccsLabels{n}(impPixels);
+    %[ccsROCx,ccsROCy] = perfcurve(realLabels(impPixels),ccsResults,3);
+    [ccsROCx,ccsROCy,ccsROCThr] = perfcurve(realLabels(impPixels),ccsYvalues{n}(impPixels),3);
     
     figure
+    
+    subplot(1,2,1);
     hold on
     %title(strcat('ROC curve for ',num2str(numToSee)));
     title('ROC curve');
     plot(rocx,rocy,'r-');
-    plot(ccsROCx(2),ccsROCy(2),'kx','LineWidth',2);
+    %plot(ccsROCx(2),ccsROCy(2),'kx','LineWidth',2);
+    plot(ccsROCx,ccsROCy,'k-');
     plot(0:0.05:1,0:0.05:1,'b--');
     xlabel('False Positive Rate');
     ylabel('True Positive Rate');
     legend('ROC curve','CCS Result','Baseline ROC');
     hold off
-    pause(1);
-    drawnow
     
-    figure
+    subplot(1,2,2);
     hold on
     %title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
-    title('Threshold versus True/False Positive Rate');
+    title('Threshold versus True/False Positive Rate for CRF model');
     plot(rocThr,rocy,'r-');
     plot(rocThr,rocx,'b-');
     legend('True Positive','False Positive');
     xlabel('Score Threshold for Class 3');
     ylabel('Rate');
     hold off
+    
+    
     pause(1);
     drawnow
     
