@@ -84,7 +84,7 @@ currentTimeStr = datestr(clock,'yyyymmddHHMMSS');
 currentFileStr = ['gibbsSample_time' num2str(timeUse) ...
     '_runAt' currentTimeStr '.mat'];
 
-numIter=5000;
+numIter=3000;
 numSeq = 20;
 iterationMaps = cell(numSeq,numIter);
 

@@ -110,7 +110,7 @@ for n=1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.75%0.4:0.05:0.95
+    for cutoff = 0.8%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
@@ -238,6 +238,7 @@ for numToSee = 1:7
     %GETS TRUE AND FALSE POSITIVE
     scores = biCur(3,impPixels)./sumProbs;
     [rocx,rocy,rocThr,rocAuc] = perfcurve(realLabels(impPixels),scores,3);
+    [probDet,falseAlarm,thr,auc] = perfcurve(realLabels(impPixels),scores,3,'XCrit','accu','YCrit','fpr');
     
     %GETS TRUE AND FALSE NEGATIVE
     %scores = biCur(2,impPixels)./sumProbs;
@@ -247,31 +248,49 @@ for numToSee = 1:7
     aucInfo(numToSee)=rocAuc;
     
     ccsResults = ccsLabels{n}(impPixels);
-    %[ccsROCx,ccsROCy] = perfcurve(realLabels(impPixels),ccsResults,3);
-    [ccsROCx,ccsROCy,ccsROCThr] = perfcurve(realLabels(impPixels),ccsYvalues{n}(impPixels),3);
+    [ccsROCxx,ccsROCyy] = perfcurve(realLabels(impPixels),ccsResults,3);
+    ccsVals = ccsYvalues{n}(impPixels);
+    ccsVals(ccsVals<0)=0;
+    [ccsROCx,ccsROCy,ccsROCThr] = perfcurve(realLabels(impPixels),ccsVals,3);
+    [probDetCCS,falseAlarmCCS,thrCCS,aucCCS] = perfcurve(realLabels(impPixels),ccsVals,3,'XCrit','accu','YCrit','fpr');
     
+    %{
     figure
     
     subplot(1,2,1);
     hold on
     %title(strcat('ROC curve for ',num2str(numToSee)));
-    title('ROC curve');
+    title('ROC curves');
     plot(rocx,rocy,'r-');
-    %plot(ccsROCx(2),ccsROCy(2),'kx','LineWidth',2);
     plot(ccsROCx,ccsROCy,'k-');
+    plot(ccsROCxx(2),ccsROCyy(2),'kx','LineWidth',2);
     plot(0:0.05:1,0:0.05:1,'b--');
     xlabel('False Positive Rate');
     ylabel('True Positive Rate');
-    legend('ROC curve','CCS Result','Baseline ROC');
+    legend('CRF ROC curve','CCS ROC Curve','CCS ROC if threshold==1','Baseline ROC');
     hold off
     
     subplot(1,2,2);
     hold on
     %title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
-    title('Threshold versus True/False Positive Rate for CRF model');
+    title('Threshold versus Error Rates for CRF model');
     plot(rocThr,rocy,'r-');
     plot(rocThr,rocx,'b-');
-    legend('True Positive','False Positive');
+    plot(thr,probDet,'k-');
+    legend('True Positive','False Positive','Accuracy');
+    xlabel('Score Threshold for Class 3');
+    ylabel('Rate');
+    hold off
+    %}
+    figure
+    
+    hold on
+    %title(strcat('True Positive Rate versus Threshold ',num2str(numToSee)));
+    title('Threshold versus Error Rates for CCS model');
+    plot(ccsROCThr,ccsROCx,'r-');
+    plot(ccsROCThr,ccsROCy,'b-');
+    plot(thrCCS,probDetCCS,'k-');
+    legend('True Positive','False Positive','Accuracy');
     xlabel('Score Threshold for Class 3');
     ylabel('Rate');
     hold off

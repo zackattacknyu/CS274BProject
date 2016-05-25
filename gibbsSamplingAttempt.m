@@ -109,7 +109,7 @@ for testNode = 1:numel(targetLabels)
 end
 
 
-numIter=5000;
+numIter=500;
 
 iterationMaps = cell(1,numIter);
 currentY = ones(size(targetLabels));
