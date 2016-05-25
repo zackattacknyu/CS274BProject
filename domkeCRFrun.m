@@ -254,7 +254,7 @@ for numToSee = 1:7
     [ccsROCx,ccsROCy,ccsROCThr] = perfcurve(realLabels(impPixels),ccsVals,3);
     [probDetCCS,falseAlarmCCS,thrCCS,aucCCS] = perfcurve(realLabels(impPixels),ccsVals,3,'XCrit','accu','YCrit','fpr');
     
-    %{
+    
     figure
     
     subplot(1,2,1);
@@ -281,7 +281,7 @@ for numToSee = 1:7
     xlabel('Score Threshold for Class 3');
     ylabel('Rate');
     hold off
-    %}
+    %{
     figure
     
     hold on
@@ -294,7 +294,7 @@ for numToSee = 1:7
     xlabel('Score Threshold for Class 3');
     ylabel('Rate');
     hold off
-    
+    %}
     
     pause(1);
     drawnow
