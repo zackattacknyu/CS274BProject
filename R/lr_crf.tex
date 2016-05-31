@@ -1,0 +1,85 @@
+%%
+%% Class homework & solution template for latex
+%% Alex Ihler
+%%
+\documentclass[twoside,11pt]{article}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{graphicx,color}
+\usepackage{verbatim,url}
+\usepackage{listings}
+\usepackage{upquote}
+\usepackage[T1]{fontenc}
+%\usepackage{lmodern}
+\usepackage[scaled]{beramono}
+%\usepackage{textcomp}
+
+% Directories for other source files and images
+\newcommand{\bibtexdir}{../bib}
+\newcommand{\figdir}{fig}
+
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\matlab}{{\sc Matlab}\ }
+
+\setlength{\textheight}{9in} \setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{-.25in}  % Centers text.
+\setlength{\evensidemargin}{-.25in} %
+\setlength{\topmargin}{0in} %
+\setlength{\headheight}{0in} %
+\setlength{\headsep}{0in} %
+
+\renewcommand{\labelenumi}{(\alph{enumi})}
+\renewcommand{\labelenumii}{(\arabic{enumii})}
+
+\theoremstyle{definition}
+\newtheorem{MatEx}{M{\scriptsize{ATLAB}} Usage Example}
+
+\definecolor{comments}{rgb}{0,.5,0}
+\definecolor{backgnd}{rgb}{.95,.95,.95}
+\definecolor{string}{rgb}{.2,.2,.2}
+\lstset{language=Matlab}
+\lstset{basicstyle=\small\ttfamily,
+        mathescape=true,
+        emptylines=1, showlines=true,
+        backgroundcolor=\color{backgnd},
+        commentstyle=\color{comments}\ttfamily, %\rmfamily,
+        stringstyle=\color{string}\ttfamily,
+        keywordstyle=\ttfamily, %\normalfont,
+        showstringspaces=false}
+\newcommand{\matp}{\mathbf{\gg}}
+
+
+
+
+\begin{document}
+
+\section{Model: logistic regression with conditional random field}
+
+\subsection{Description}
+Let the probability of rainfall at cell be $p_i$, $i=1,\ldots,n$, and the occurrence of rainfall be $Z_i$ distributed $Bernoulli(p_i)$. In this model we only consider a single explanatory variable, the temperature at each pixl, $T_i$. The standard logistic regression (RL) on $p_i$ is
+
+$$
+logit(p_i) = \beta_0 + \beta_t * T_i
+$$
+
+where $logit(x)=log(x/(1-x))$. Rainfall has strong spatial correlation, and so to modify the LR model to incorporate a Gaussian conditional random field (CRF). The CRF component, $W$ describes the strength of the spatial correlation of rainfall. Let $W$ have a multivariate Gaussian distribution with $n$ components, $Normal(0, \Sigma^{-1})$. The covariance matrix $\Sigma$ is parameterized by a sparse precision matrix $\Sigma^{-1}$ in which the the entries are nonzero only if two pixels are adjacent in the image. The model now becomes
+
+$$
+logit(p_i) = \beta_0 + \beta_t * T_i + w_i.
+$$
+
+In geostatistics this is called a Conditional Autoregressive (CAR) model, and the $W$ is interpreted as a type of random effect on the intercept. Then (reference to Besag) the joint distribution on the CRF $W$ is equivalent to defining the conditional distributions. Specifically,
+
+$$
+w_i | w_{i \neq j} distas \, Normal\left( \frac{1}{m_i} \sum_{j \in n(i)} w_j, \frac{\tau^2}{m_i} \right),
+$$
+
+where $n(i)$ is the set of neighbors of pixel $i$, and $m_i=|n(i)|$. When the precision matrix is sparse, which is the case for the gridded rainfall data, sparse matrix operations on the precision matrix can drastically reduce the computational burden of inference in CAR models.
+
+\subsection{Implementation}
+A Bayesian analysis with weakly informative priors on $\beta$ was performed using the Stan probabilistic programming language. Only \emph{maximum a posteriori} estimates were found.
+
+
+
+\end{document}
