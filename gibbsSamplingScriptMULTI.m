@@ -33,7 +33,8 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
-load('domkeCRFrun19','p');
+%load('domkeCRFrun19','p');
+load('domkeCRFrun_emLoss_250times','p')
 totalN2 = length(xFiles12);
 
 trialInds2 = [timeUse];
@@ -85,7 +86,7 @@ currentFileStr = ['gibbsSample_time' num2str(timeUse) ...
     '_runAt' currentTimeStr '.mat'];
 
 numIter=3000;
-numSeq = 20;
+numSeq = 5;
 iterationMaps = cell(numSeq,numIter);
 
 tic
