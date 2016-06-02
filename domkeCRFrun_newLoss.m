@@ -41,4 +41,4 @@ options.opt_display = 0;
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_emLoss.mat','p');
+save('domkeCRFrun_emLoss_250times.mat','p');
