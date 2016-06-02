@@ -5,7 +5,9 @@ function [ x_pred ] = getPredLabels( b_i, cutoff,sizr,sizc)
 [~,x_predInit] = max(b_i,[],1);
 for i = 1:length(x_predInit)
    if(x_predInit(i)>1)
-      if(b_i(2,i)<cutoff)
+       curBi = b_i(:,i);
+       curBi = curBi./sum(curBi(2:3));
+      if(curBi(2)<cutoff)
           x_predInit(i)=3;
       else
           x_predInit(i)=2;

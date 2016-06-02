@@ -28,7 +28,8 @@ trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 %trialInds = highestPrecipInds(1:numRandInds);
 
 
-loss_spec = 'trunc_cl_trwpll_5';
+%loss_spec = 'trunc_cl_trwpll_5';
+loss_spec = 'em_mnf_1e5';
 %loss_spec = 'trunc_uquad_trwpll_5';
 
 crf_type  = 'linear_linear';
@@ -53,7 +54,9 @@ save('domkeCRFrun18.mat','p');
 
 %%
 %load('domkeCRFrun19','p');
-load('domkeCRFrun_emLoss_250times','p');
+%load('domkeCRFrun_emLoss_250times','p');
+%load('domkeCRFrun_constEdges','p');
+load('domkeCRFrun_constEdges_withPairs','p');
 %load('currentDomkeResults19_mini'); %DISTRIBUTION IS NOT VERY BIMODAL
 %load('currentDomkeResults19_mini_precipBound'); %DIST IS QUITE BIMODAL THIS WAY
 %load('currentDomkeResults19_mini_precipBoundRand');
@@ -70,9 +73,15 @@ numRandInds = 3;
 %in order of perceived goodness of pred
 trialInds2 = [325 1114 1152 204 284 1196 1199];
 
+%[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+%    obtainDataFromFiles(trialInds2,...
+%    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+
+edge_params = {{'const'},{'pairtypes'}};
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-    obtainDataFromFiles(trialInds2,...
-    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+    obtainDataFromFiles2(trialInds2,...
+    xFiles12,yFiles12,ccsFiles12,xOneFiles12,edge_params);
+
 
 cutoff = 0.85;
 %%
@@ -111,7 +120,7 @@ for n=1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.8%0.4:0.05:0.95
+    for cutoff = 0.6%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
@@ -319,7 +328,7 @@ ylabel('AUC');
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-numToSee = 1;
+numToSee = 2;
 biCur = biArrays{numToSee};
 normFactors23 = sum(biCur(2:3,:));
 
