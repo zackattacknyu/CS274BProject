@@ -52,7 +52,8 @@ p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 save('domkeCRFrun18.mat','p');
 
 %%
-load('domkeCRFrun19','p');
+%load('domkeCRFrun19','p');
+load('domkeCRFrun_emLoss_250times','p');
 %load('currentDomkeResults19_mini'); %DISTRIBUTION IS NOT VERY BIMODAL
 %load('currentDomkeResults19_mini_precipBound'); %DIST IS QUITE BIMODAL THIS WAY
 %load('currentDomkeResults19_mini_precipBoundRand');

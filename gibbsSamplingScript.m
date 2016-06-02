@@ -40,7 +40,8 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
-load('domkeCRFrun19','p');
+%load('domkeCRFrun19','p');
+load('domkeCRFrun_emLoss_250times','p');
 totalN2 = length(xFiles12);
 
 trialInds2 = [timeUse];
@@ -87,96 +88,89 @@ currentLogPotential = zeros(1,3);
 
 load('model_500_750_edgeIndex.mat');
 
+numIter=3000;
+numSeq=3;
 currentTimeStr = datestr(clock,'yyyymmddHHMMSS');
 currentFileStr = ['gibbsSample_time' num2str(timeUse) ...
     '_runAt' currentTimeStr '.mat'];
 
-numIter=5000;
+%avg of 0.3 seconds per iteration
+iterationMaps = cell(numSeq,numIter);
 
-iterationMaps = cell(1,numIter);
-currentY = ones(size(targetLabels));
-for iter = 1:numIter
-    tic
-    fprintf('Now doing iteration %d\n',iter);
-    for testNode = 1:numel(targetLabels)
+for seqNum = 1:numSeq
+    currentY = ones(size(targetLabels));
+    for iter = 1:numIter
 
-        if(mod(testNode,5000)==0)
-           fprintf('%d Nodes Processed\n',testNode); 
-        end
+        %fprintf('Now doing iteration %d\n',iter);
+        for testNode = 1:numel(targetLabels)
 
-        if(targetLabels(testNode)==1)
-            currentY(testNode)=1;
-           continue; 
-        end
+            %if(mod(testNode,5000)==0)
+            %   fprintf('%d Nodes Processed\n',testNode); 
+            %end
+
+            if(targetLabels(testNode)==1)
+                currentY(testNode)=1;
+               continue; 
+            end
 
 
 
-        currentLogPotential = zeros(1,3);
-        for testNodeValue = 1:3
-           currentNodePotential = ...
-               nodeLogPotentials(testNode,testNodeValue);
-           currentLogPotential(testNodeValue) = currentLogPotential(testNodeValue)...
-               + currentNodePotential;
-        end
+            currentLogPotential = nodeLogPotentials(testNode,:);
 
-        
-        node1Edges = allNode1Edges{testNode};
-        node2Edges = allNode2Edges{testNode};
-        
-        for edgeI = 1:length(node1Edges)
-            edge = node1Edges(edgeI);
-            logPotMatrix = reshape(edgeLogPotentials(edge,:),3,3);
+            node1Edges = allNode1Edges{testNode};
+            node2Edges = allNode2Edges{testNode};
 
-            node2 = curModelPairs(edge,2);
-            for testNodeValue = 1:3
+            for edgeI = 1:length(node1Edges)
+                edge = node1Edges(edgeI);
+                logPotMatrix = reshape(edgeLogPotentials(edge,:),3,3);
+
+                node2 = curModelPairs(edge,2);
                 node2value = previousY(node2);
-                curEdgePot = logPotMatrix(testNodeValue,node2value);
-                currentLogPotential(testNodeValue) = ...
-                   currentLogPotential(testNodeValue) + curEdgePot;
+                currentLogPotential = currentLogPotential + logPotMatrix(:,node2value)';
+
             end
 
-        end
+            for edgeI = 1:length(node2Edges)
+                edge = node2Edges(edgeI);
+                logPotMatrix = reshape(edgeLogPotentials(edge,:),3,3);
 
-        for edgeI = 1:length(node2Edges)
-            edge = node2Edges(edgeI);
-            logPotMatrix = reshape(edgeLogPotentials(edge,:),3,3);
-
-            node1 = curModelPairs(edge,1);
-            for testNodeValue = 1:3
-                %node1value = previousY(node1);
+                node1 = curModelPairs(edge,1);
                 node1value = currentY(node1);
-                curEdgePot = logPotMatrix(node1value,testNodeValue);
-                currentLogPotential(testNodeValue) = ...
-                   currentLogPotential(testNodeValue) + curEdgePot;
+                currentLogPotential = currentLogPotential + logPotMatrix(node1value,:);
+
             end
 
+            [maxLogPotential,bestLabel] = max(currentLogPotential);
+
+            if(maxLogPotential>700)
+               labelAssign = bestLabel; 
+            else
+                denom = sum(exp(currentLogPotential));
+                probs = exp(currentLogPotential)./denom;
+                
+                probs2 = probs(2:3)./sum(probs(2:3));
+
+                randSample = rand;
+                labelAssign = find(randSample<cumsum(probs2),1,'first')+1;
+
+
+            end
+
+            currentY(testNode)=labelAssign;
+            %currentY(testNode)=randLabel+1;
+
+
         end
 
-        [maxLogPotential,bestLabel] = max(currentLogPotential);
+        previousY = currentY;
+        iterationMaps{seqNum,iter} = currentY;
 
-        if(maxLogPotential>700)
-           labelAssign = bestLabel; 
-        else
-            denom = sum(exp(currentLogPotential));
-            probs = exp(currentLogPotential)./denom;
-
-            randSample = rand;
-            labelAssign = find(randSample<cumsum(probs),1,'first');
-
-
+        if(mod(iter,500)==0)
+            fprintf('Time: %d ; SeqNum: %d ; %d Iterations Done\n',timeUse,seqNum,iter);
+            save(currentFileStr,'iterationMaps','-v7.3');
         end
-
-        currentY(testNode)=labelAssign;
-        %currentY(testNode)=randLabel+1;
-
 
     end
     
-    previousY = currentY;
-    iterationMaps{iter} = currentY;
-    toc
-    if(mod(iter,50)==0)
-        save(currentFileStr,'iterationMaps','-v7.3');
-    end
 end
 
