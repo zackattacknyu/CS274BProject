@@ -27,11 +27,11 @@ L = - \sum_c {log \, \mu(y_c; \theta, \phi, x_i, x_j, w_c)}
 \]
 Here $\mu$ signfies the accuracy of the clique marginal. For learning, we used the Back TRW algorithm (Domke 2013).
 
-\subsection{Setup}
+\subsection{Feature Setup}
 
-Our nodes consist of pixels in the precipitation image. Each pixel is connected to its horizontal and vertical neighbors via an edge in our graph. We stick to this 4-connected grid for our whole CRF experiment. 
-
-Describe our data and model setup
+The features associated with each node consist of the temperature as well as the 12 cloud patch features from the CCS data. There is one additional feature that is a constant. The cloud patch features are zero when there is no cloud. Additionally, we added an additional feature that is 1 for a cloud pixel and 0 for a non-cloud pixel to be sure that $\theta$ focuses only on precipitation versus no precipitation pixels for the cloud ones. There are thus a total of 15 features for each node. \\
+\\
+The edge features were reused from the vision application where the code came from. They consist of the absolute value of the temperature difference between neighboring pixels, parametrized as a set of 20 thresholds. There is also a constant. Additionally, a second set of features were added. The first set is only used by horizontal edges and the second set is only used by vertical edges. This way the edges are parameterized separately. 
 
 \subsection{Results}
 
@@ -50,6 +50,10 @@ Here are some of the statistics \\
 
 \subsection{Conclusion}
 
-The model does seem to work too well. Due to the imbalanced nature of the classes, the probability of precipitation ended up quite low even in pixels where it occured. Work is needed to improve it. 
+There are problems with this model. There is low probability of precipitation even in the pixels where it occurred. This could be due to the fact that we have highly imbalanced classes. There could also be problems with our edge features as they are inspired by a different application. \\
+\\
+One potential fix is to use a loss function that weights incorrect guesses for precipitation pixels higher than guesses for other pixels. \\
+\\
+Another potential fix is a rethinking of the edge features. The current edge features do not correlate well **INSERT STATISTIC SHOWING THIS** with the target pairs of states for the nodes. We need to find edge features that show some correlation with pairs of states for neighboring nodes. One idea is to use the temperature difference but only for the cloud pixels. Another idea is to use one of the cloud patch features. We could also use a combination of mean temperature between pixels and difference between them. 
 
 
