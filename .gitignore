@@ -25,3 +25,4 @@
 *.bbl
 *.blg
 *.log
+/*.synctex.gz

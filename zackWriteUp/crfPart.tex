@@ -5,13 +5,31 @@ Conditional Random Fields...
 
 \section{Introduction}
 
-Describe the CRF graphical model in general
-
-\section{Learning}
-
-Describe the methods (back TRW, surrogate EM) used to learn the model parameters
+Conditional Random Fields are discriminative models for the conditional distribution of labels $y$ given observations $x$. For our purposes it will be defined over a graph structure as follows:
+\[
+p(y|x) = \frac{1}{Z(x)} \prod_i{\psi(y_i,x)} \prod_{c}{\psi(y_c,x)}
+\]
+Here, $Z(x)$ is the partition function that normalizes the distribution, $\psi(y_i,x)$ is the potential function for the states of node $i$ given the input $x$, and $\psi(y_c,x)$ is the potential function for the states of nodes in clique $c$ given the input $x$. \\
+\\
+We will take a 2-D image and make each pixel a separate node in our graph. Our graph will be a 4-connected grid so two pixels will be connected via an edge if they are immediate neighbors horizontally or vertically. \\
+\\
+Our input consists of features for each node and edge, denoted by $x_i$ and $w_c$ respectively. The edge features for clique $c$ are used to obtain a conditional distribution of values for the nodes connected by $c$ and the node features for node $i$ are used to obtain a distribution of values for only node $i$. Our equation now becomes as follows:
+\[
+p(y|x) = \frac{1}{Z(x)} \prod_i{\psi(y_i,x_i)} \prod_{c}{\psi(y_c,w_c)}
+\]
+For our purposes, $\psi$ will be an exponential family. We will learn two matrices $\theta$ and $\phi$. The matrix $\theta$ will be multiplied by the node features to determine the log potentials for each value of node $i$. The matrix $\phi$ will be multiplied by the edge features to determine the log potentials for each pair of values for the nodes $i$ and $j$ connected by an edge in our graph. The model is now as follows:
+\[
+p(y|x) = \frac{1}{Z(x)} \prod_i{exp(\theta x_i)} \prod_{ij}{exp(\phi w_{ij})}
+\]
+Our goal will be to find $\theta$ and $\phi$ matrices that minimize a loss function given our training data. In our results, the loss function is defined as the clique logistic loss (Domke 2013)
+\[
+L = - \sum_c {log \, \mu(y_c; \theta, \phi, x_i, x_j, w_c)}
+\]
+Here $\mu$ signfies the accuracy of the clique marginal. For learning, we used the Back TRW algorithm (Domke 2013).
 
 \section{Setup}
+
+Our nodes consist of pixels in the precipitation image. Each pixel is connected to its horizontal and vertical neighbors via an edge in our graph. We stick to this 4-connected grid for our whole CRF experiment. 
 
 Describe our data and model setup
 
