@@ -1,9 +1,9 @@
 
 
 
-Conditional Random Fields...
+\section{Model: Exponential Family with Conditional Random Field}
 
-\section{Introduction}
+\subsection{Introduction}
 
 Conditional Random Fields are discriminative models for the conditional distribution of labels $y$ given observations $x$. For our purposes it will be defined over a graph structure as follows:
 \[
@@ -27,18 +27,29 @@ L = - \sum_c {log \, \mu(y_c; \theta, \phi, x_i, x_j, w_c)}
 \]
 Here $\mu$ signfies the accuracy of the clique marginal. For learning, we used the Back TRW algorithm (Domke 2013).
 
-\section{Setup}
+\subsection{Setup}
 
 Our nodes consist of pixels in the precipitation image. Each pixel is connected to its horizontal and vertical neighbors via an edge in our graph. We stick to this 4-connected grid for our whole CRF experiment. 
 
 Describe our data and model setup
 
-\section{Results}
+\subsection{Results}
 
-Show maps of some of the test probability distributions
+Our training data consisted of temperature and precipitation information from September 2011. There were readings every half hour thus there were a total of 1440 maps used in training. We then used maps from September 2012 as our test set. \\
+\\
+Here is an example of one of the September 2012 maps. These are the target precipiation labels. \\
+**INSERT FIGURE OF TARGET LABELS**\\
+Here are the marginal probabilities of rainfall across the image.\\
+**INSERT FIGURE OF RAINFALL PROBS**\\
+Because the marginal probabilities rarely exceeded $0.5$ we needed a smaller threshold for our predictor. We thus plotted the ROC curve for this map in order to see what a good score threshold would be:\\
+**INSERT ROC CURVE** \\
+If we use **INSERT VALUE** as our classification threshold then here is the map\\
+**INSERT MAP**\\
+Here are some of the statistics \\
+**TABLE OF PROBABILITY INFORMATION FOR THE MAP**
 
-\section{Conclusion}
+\subsection{Conclusion}
 
-The model does seem to work too well. Work is needed to improve it. 
+The model does seem to work too well. Due to the imbalanced nature of the classes, the probability of precipitation ended up quite low even in pixels where it occured. Work is needed to improve it. 
 
 
