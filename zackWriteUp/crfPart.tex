@@ -31,13 +31,24 @@ Here $\mu$ signfies the accuracy of the clique marginal. For learning, we used t
 
 The features associated with each node consist of the temperature as well as the 12 cloud patch features from the CCS data. There is one additional feature that is a constant. The cloud patch features are zero when there is no cloud. Additionally, we added an additional feature that is 1 for a cloud pixel and 0 for a non-cloud pixel to be sure that $\theta$ focuses only on precipitation versus no precipitation pixels for the cloud ones. There are thus a total of 15 features for each node. \\
 \\
-The edge features were reused from the vision application where the code came from. They consist of the absolute value of the temperature difference between neighboring pixels, parametrized as a set of 20 thresholds. There is also a constant. Additionally, a second set of features were added. The first set is only used by horizontal edges and the second set is only used by vertical edges. This way the edges are parameterized separately. 
+Since the first node feature is temperature, we will define the following:
+\[
+\Delta x_{ij} = |x_{i1} - x_{j1}|
+\]
+The edge features used were inspired by computer vision labeling problems and consisted of the temperature differences between neighbors parameterized as a set of thresholds. More formally, let $T = \{ T_0 , T_1, ..., T_M \}$ be a set of thresholds. Given the set $T$ and a value $s$, we will define a function that returns a vector of which thresholds it passes as follows
+\[
+h(s,T) = ( \delta (s \geq T_0), \delta (s \geq T_1), ..., \delta (s \geq T_M))
+\]
+In our case, we will use $T_i = \frac{i}{20}$ for $i$ from $0$ to $M$ and $M=10$. For a given edge between neighbors $i$ and $j$, the edge feature vector will be as follows
+\[
+w_{ij} = h( \Delta x_{ij}, T)
+\] 
 
 \subsection{Results}
 
 Our training data consisted of temperature and precipitation information from September 2011. There were readings every half hour thus there were a total of 1440 maps used in training. We then used maps from September 2012 as our test set. \\
 \\
-Here is an example of one of the September 2012 maps. These are the target precipiation labels. \\
+Here is an example of one of the September 2012 maps. These are the target precipitation labels. \\
 **INSERT FIGURE OF TARGET LABELS**\\
 Here are the marginal probabilities of rainfall across the image.\\
 **INSERT FIGURE OF RAINFALL PROBS**\\
@@ -52,8 +63,6 @@ Here are some of the statistics \\
 
 There are problems with this model. There is low probability of precipitation even in the pixels where it occurred. This could be due to the fact that we have highly imbalanced classes. There could also be problems with our edge features as they are inspired by a different application. \\
 \\
-One potential fix is to use a loss function that weights incorrect guesses for precipitation pixels higher than guesses for other pixels. \\
-\\
-Another potential fix is a rethinking of the edge features. The current edge features do not correlate well **INSERT STATISTIC SHOWING THIS** with the target pairs of states for the nodes. We need to find edge features that show some correlation with pairs of states for neighboring nodes. One idea is to use the temperature difference but only for the cloud pixels. Another idea is to use one of the cloud patch features. We could also use a combination of mean temperature between pixels and difference between them. 
+One potential fix is a rethinking of the edge features. The current edge features do not correlate well **INSERT STATISTIC SHOWING THIS** with the target pairs of states for the nodes. We need to find edge features that show some correlation with pairs of states for neighboring nodes. One idea is to use the temperature difference but only for the cloud pixels. Another idea is to use one of the cloud patch features. We could also use a combination of mean temperature between pixels and difference between them. 
 
 
