@@ -1,3 +1,4 @@
+s
 library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
@@ -28,7 +29,7 @@ fit <- optimizing(model, data=stan.data, verbose=TRUE, iter=100)
 
 ## map of latent variable
 ## look at histograms, etc, of model fit
-image(matrix(fit$par[4:(N+3)], nrow = 500))
+image(matrix(fit$par[3:(N+2)], nrow = 500))
 hist(matrix(fit$par[4:(N+3)], nrow = 500))
 image(test.temps)
 image(matrix(fit$par[(N+4):(2*N+3)], nrow = 500))
