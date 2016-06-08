@@ -60,18 +60,26 @@ w_{ij} = h( \Delta x_{ij}, T)
 
 \subsection{Results}
 
-Our training data consisted of temperature and precipitation information from September 2011. There were readings every half hour thus there were a total of 1440 maps used in training. We then used maps from September 2012 as our test set. \\
+Our training data consisted of temperature and precipitation information from September 2011. There were readings every half hour thus there were a total of 1440 maps. Due to the large size of the data set, I used a random subset of 160 maps for training. We then used maps from September 2012 as our test set. \\
 \\
-Here is an example of one of the September 2012 maps. These are the target precipitation labels. \\
-**INSERT FIGURE OF TARGET LABELS**\\
-Here are the marginal probabilities of rainfall across the image.\\
-**INSERT FIGURE OF RAINFALL PROBS**\\
-Because the marginal probabilities rarely exceeded $0.5$ we needed a smaller threshold for our predictor. We thus plotted the ROC curve for this map in order to see what a good score threshold would be:\\
-**INSERT ROC CURVE** \\
-If we use **INSERT VALUE** as our classification threshold then here is the map\\
-**INSERT MAP**\\
+Here is an example of one of the September 2012 maps. Results for the other maps were quite similar. These are the target precipitation labels. 
+\begin{figure}[h]
+\centering
+\includegraphics[width=3in]{./zackWriteUp/time1196_labelMap.png}
+\caption{Probability of Rainfall}
+\end{figure}
+Here are the marginal probabilities of rainfall across the image.
+\begin{figure}[h]
+\centering
+\includegraphics[width=3in]{./zackWriteUp/time1196_probPrecip.png}
+\caption{Probability of Rainfall}
+\end{figure}
 Here are some of the statistics \\
-**TABLE OF PROBABILITY INFORMATION FOR THE MAP**
+**TABLE OF PROBABILITY INFORMATION FOR THE MAP**\\
+Naively, these were our prediction stats:\\
+**INSERT THEM**\\
+Because the marginal probabilities rarely exceeded $0.5$ we needed a smaller threshold for our predictor if we ever wanted to predict precipitation with this model. After doing ROC analysis, as can be observed in figure **REFERENCE**, we picked a threshold of **INSERT WHAT IT WAS** and these were our prediction accuracies: **INSERT STATS**. 
+
 
 \subsection{Conclusion}
 
