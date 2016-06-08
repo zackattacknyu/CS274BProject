@@ -62,13 +62,13 @@ Our training data consisted of temperature and precipitation information from Se
 \\
 \begin{figure}[t]
 \centering
-\includegraphics[height=2.5in]{./zackWriteUp/time698_sep2011_labelAndProb.png}
+\includegraphics[height=2in]{./zackWriteUp/time698_sep2011_labelAndProb.png}
 \caption{Target Labels (left) and Probability of Rainfall (right) for Sep 15, 2011 at 12:45pm. Labels mean the following: 1:No Cloud ; 2:Cloud, No Rain ; 3:Cloud, Rain}
 \label{labelProb2}
 \end{figure}
 \begin{figure}[t]
 \centering
-\includegraphics[height=2.5in]{./zackWriteUp/time1196_labelAndProb.png}
+\includegraphics[height=2in]{./zackWriteUp/time1196_labelAndProb.png}
 \caption{Target Labels (left) and Probability of Rainfall (right) for Dec 28, 2012 at 11:45pm. Labels mean the following: 1:No Cloud ; 2:Cloud, No Rain ; 3:Cloud, Rain}
 \label{labelProb}
 \end{figure}
@@ -79,8 +79,6 @@ The probabilities learned are at least somewhat on par with what we hoped even i
 
 \subsection{Conclusion}
 
-The results were quite discouraging so much must be needed to improve the probabilistic model. There is low probability of precipitation even in $S_3$. This could be due to the fact that we have highly imbalanced classes. There could also be problems with our edge features as they are inspired by a different application. \\
-\\
-One potential fix is a rethinking of the edge features. The current edge features do not correlate well **INSERT STATISTIC SHOWING THIS** with the target pairs of states for the nodes. We need to find edge features that show some correlation with pairs of states for neighboring nodes. One idea is to use the temperature difference but only for the cloud pixels. Another idea is to use one of the cloud patch features. We could also use a combination of mean temperature between pixels and difference between them. 
+The results were quite discouraging so much must be needed to improve the probabilistic model. There is low probability of precipitation even in pixels where rainfall occurred. Our classes are highly imbalanced in that there are much fewer cloud pixels with rainfall than without rainfall. More needs to be done to correct for this imbalance. One problem could be that the edge features are inspired by segmentation in Computer Vision meaning that region boundaries are assumed to be quite obvious in the observed data. That has not occurred with our data thus we need to rethink what we use as our edge features in the model. The other potential problem is that our loss function sums over the clique marginals instead of calculating the likelihood over the whole map. If we attempt to optimize the likelihood over the whole map then we might obtain a better prediction. 
 
 
