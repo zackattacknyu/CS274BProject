@@ -1,4 +1,14 @@
 
+\section{Introduction}
+Precipitation plays a major role in many natural and societal systems, but direct observations of precipitation are not available for all areas. Remote sensing platforms such as satellites provide estimates of temperature via measurements of elecromagnetic radiation. Temperature and precipitation are closely related due to the physical mechanisms which govern precipitation. Furthermore there is strong spatial structure in both temperature and precipitation, so the ability to describe spatial dependence is highly desirable for models of precipitation. We consider modelling precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. Graphical models provide a natural approach for taking into account the spatial dependencies inherent in patterns of precipitation.
+
+\section{Precipitation dataset}
+We will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temperal resolution under consideration is the finest available, 30 minutes. The following web link provides a more detailed description of the data set. 
+
+\begin{lstlisting}
+http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
+\end{lstlisting}
+
 
 
 \section{Model: Exponential Family with Conditional Random Field}
@@ -25,7 +35,11 @@ Our goal will be to find $\theta$ and $\phi$ matrices that minimize a loss funct
 \[
 L = - \sum_c {log \, \mu(y_c; \theta, \phi, x_i, x_j, w_c)}
 \]
-Here $\mu$ signfies the accuracy of the clique marginal. For learning, we used the Back TRW algorithm (Domke 2013).
+Here $\mu$ signifies the accuracy of the clique marginal. \\
+\\
+The CRF library used employed a method it referred to as Truncated Fitting for learning. In summary, this method involved performing N iterations ($N=5$ for our implementation) of inference and then calculating the loss function regardless of whether or not convergence has occurred. The gradient of the loss function is then computed and this is used to update the model parameters. Finally, N iterations of inference are done in reverse order.  \\
+\\
+The inference method employed was Tree-Reweighted Belief Propagation. This method replaces the marginal polytope with a super-set before computing the message passing updates. Approximations are done to ensure there is a tractable upper bound on the log partition function (Domke 2013). 
 
 \subsection{Feature Setup}
 
