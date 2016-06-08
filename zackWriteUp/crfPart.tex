@@ -60,16 +60,21 @@ w_{ij} = h( \Delta x_{ij}, T)
 
 Our training data consisted of temperature and precipitation information from September 2011. There were readings every half hour thus there were a total of 1440 maps. Due to the large size of the data set, I used a random subset of 160 maps for training. We then tested the distribution using maps from September 2012. \\
 \\
-Figure \ref{labelProb} shows the target labels and the probability of rainfall for one of the Sep 2012 Maps. Results for the other maps were quite similar.
+\begin{figure}[t]
+\centering
+\includegraphics[height=2.5in]{./zackWriteUp/time698_sep2011_labelAndProb.png}
+\caption{Target Labels (left) and Probability of Rainfall (right) for Sep 15, 2011 at 12:45pm. Labels mean the following: 1:No Cloud ; 2:Cloud, No Rain ; 3:Cloud, Rain}
+\label{labelProb2}
+\end{figure}
 \begin{figure}[t]
 \centering
 \includegraphics[height=2.5in]{./zackWriteUp/time1196_labelAndProb.png}
-\caption{Target Labels (left) and Probability of Rainfall (right). Labels mean the following: 1:No Cloud ; 2:Cloud, No Rain ; 3:Cloud, Rain}
+\caption{Target Labels (left) and Probability of Rainfall (right) for Dec 28, 2012 at 11:45pm. Labels mean the following: 1:No Cloud ; 2:Cloud, No Rain ; 3:Cloud, Rain}
 \label{labelProb}
 \end{figure}
-The baseline error (if we predict no rain for all the cloud pixels) was $19.9\%$. When we tried to use the probability as a predictor, we ended up with a pixelwise error higher than the baseline. \\
+Figure \ref{labelProb2} shows the target labels and probability of rainfall for one of the training maps. Figure \ref{labelProb} shows the same thing for one of the test maps. Results for the other maps were quite similar. The baseline error (if we predict no rain for all the cloud pixels) was $30.7\%$ for the training map and $19.9\%$ for the test map. No matter what score threshold was used for the predictor, the pixelwise error was higher than the baseline for both maps. \\
 \\
-The probabilities learned are at least somewhat on par with what we hoped even if they can't be used for a predictor yet. If we define $S_2$ as the set of cloud pixels with no rain and $S_3$ as the set of cloud pixels with rain, then the average marginal probability of rainfall in $S_2$ is $0.1997$ while in $S_3$ it is $0.2619$. 
+The probabilities learned are at least somewhat on par with what we hoped even if they can't be used for a predictor yet. For the training map, the average marginal probability of rainfall among cloud pixels with no rain was $0.1248$ while the probability among cloud pixels with rain was $0.1547$. For the test map, the probabilities were $0.1997$ and $0.2619$ respectively.  
 
 
 \subsection{Conclusion}
