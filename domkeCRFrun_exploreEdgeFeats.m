@@ -53,7 +53,7 @@ end
     obtainDataFromFiles(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 %%
-for n = 1:N
+for n = 4:N
    figure
    subplot(1,3,1)
    imagesc(labels_test{n})
@@ -62,13 +62,16 @@ for n = 1:N
    colorbar;
    
    curTemps = tempData{n};
+   noCloudInds = find(labels_test{n}<=1);
+   curTemps(noCloudInds)=0;
+   
    curHorizDiff = diff(curTemps,[],2);
    curVertDiff = diff(curTemps);
    
    curHmap = abs(curHorizDiff);
-   curHmap(curHmap>10)=0;
+   curHmap(curHmap>10)=10;
    curVmap = abs(curVertDiff);
-   curVmap(curVmap>10)=0;
+   curVmap(curVmap>10)=10;
    
    subplot(1,3,2)
    imagesc(abs(curHmap));
@@ -85,6 +88,68 @@ for n = 1:N
    %subplot(1,4,4)
    %imagesc(curTemps)
    %colorbar;
+end
+
+%%
+
+
+nn=7;
+labelMap=labels_test{nn};
+curTemps = tempData{nn};
+%noCloudInds = find(labels_test{nn}<=1);
+%curTemps(noCloudInds)=0;
+
+labelPairDistribution = cell(1,9);
+for i = 1:9
+   labelPairDistribution{i} = zeros(1,500*750); 
+end
+curInds = zeros(1,9);
+labelPairs = ones(9,2);
+labelPairs(:,1) = floor((0:8)/3)+1;
+labelPairs(:,2) = floor(mod(0:8,3))+1;
+
+%convert from (i,j) to row in label pairs
+row = @(i,j) (floor(3*(i-1)+j));
+
+for hrow = 1:500
+   for vcol = 1:750
+       iNode = labelMap(hrow,vcol);
+       iNodeTemp = curTemps(hrow,vcol);
+       
+       for jDir = 1:2
+            if(jDir==1 && vcol<750)
+               jNodeTemp = curTemps(hrow,vcol+1);
+               jNode = labelMap(hrow,vcol+1);
+            elseif(jDir==2 && hrow<500)
+                jNodeTemp = curTemps(hrow+1,vcol);
+                jNode = labelMap(hrow+1,vcol);
+            else
+                continue;
+            end
+
+           labelPairRow = row(iNode,jNode);
+           curInds(labelPairRow) = curInds(labelPairRow)+1;
+
+           tempDiff = exp(abs(iNodeTemp-jNodeTemp));
+
+           labelPairDistribution{labelPairRow}(curInds(labelPairRow)) = tempDiff;
+       
+       end
+   end
+end
+
+
+for i = 1:9
+    curList = labelPairDistribution{i};
+    curEndInd = curInds(i);
+   labelPairDistribution{i} = curList(1:curEndInd); 
+end
+
+figure
+for i = 1:9
+   subplot(3,3,i);
+   hist(labelPairDistribution{i},100)
+   title(['i=' num2str(labelPairs(i,1)) ' j=' num2str(labelPairs(i,2))])
 end
 
 
