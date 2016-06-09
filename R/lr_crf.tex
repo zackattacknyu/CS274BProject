@@ -33,7 +33,7 @@ $$
 logit(p_i) = \beta_0 + \beta_t T_i + w_i.
 $$
 
-In geostatistics this is called a Conditional Autoregressive (CAR) model, and the $W$ is interpreted as a type of random effect on the intercept. Then (reference to Besag) the joint distribution on the CRF $W$ is equivalent to defining the conditional distributions. Specifically,
+In geostatistics this is called a Conditional Autoregressive (CAR) model \cite{Waller2010}, and the $W$ is interpreted as a type of random effect on the intercept. Then (reference to Besag) the joint distribution on the CRF $W$ is equivalent to defining the conditional distributions. Specifically,
 
 $$
 w_i | w_{i \neq j} \distas{} \, Normal\left( \frac{1}{m_i} \sum_{j \in n(i)} w_j, \frac{\tau^2}{m_i} \right),

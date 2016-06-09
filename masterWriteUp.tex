@@ -14,7 +14,8 @@
 %\usepackage{textcomp}
 
 % Directories for other source files and images
-\newcommand{\bibtexdir}{../bib}
+\usepackage[backend=biber]{biblatex}
+
 \newcommand{\figdir}{fig}
 
 \newcommand{\E}{\mathrm{E}}
@@ -61,6 +62,7 @@
 \newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
 
 \newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+\addbibresource{./refs.bib}%needs .bib extension, location of bib file
 
 \newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
@@ -74,9 +76,10 @@
 \centerline{Course Name: Spring 2016}
 \centerline{\bf Due: June 9, 2016}
 
-\input{./zackWriteUp/crfPart.tex}
+\input{./zackWriteUp/crfPart}
 
-\input{./R/lr_crf.tex}
+\input{./R/lr_crf}
 
+\printbibliography
 
 \end{document}
