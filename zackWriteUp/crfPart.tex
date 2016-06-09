@@ -7,11 +7,7 @@ Precipitation plays a major role in many natural and societal systems, but direc
 For this project we model precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. In order to take into account the spatial dependencies inherent in patterns of precipitation, we made conditional random fields where the precipitation values in the pixels are conditioned on temperature and other features. We tried three different methods for modeling this CRF, including Exponential Families, Logistic Regression, and Loopy BP. 
 
 \subsection{Data Set}
-We will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. Not all pixels are part of cloud patches. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temperal resolution under consideration is the finest available, 30 minutes. The following web link provides a more detailed description of the data set. \cite{persianccs}
-
-\begin{lstlisting}
-http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
-\end{lstlisting}
+We will use PERSIAN-CCS data set \cite{persianccs} which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. Not all pixels are part of cloud patches. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temporal resolution under consideration is the finest available, 30 minutes. 
 
 \section{Model: Exponential Family with Conditional Random Field}
 
