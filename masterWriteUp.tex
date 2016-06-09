@@ -50,6 +50,22 @@
 \newcommand{\matp}{\mathbf{\gg}}
 
 
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{epigraph}
+\usepackage{csquotes}
+
+\usepackage{graphicx}% http://ctan.org/pkg/graphicx
+\usepackage{amsmath}% http://ctan.org/pkg/amsmath
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+
+\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+
 
 
 \begin{document}
