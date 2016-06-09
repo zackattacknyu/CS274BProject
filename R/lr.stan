@@ -12,8 +12,8 @@ parameters {
 }
 model {
   matrix[m, k] lo;
-  beta0 ~ normal(10, 5);
-  beta ~ normal(-0.08, 1);
+  beta0 ~ normal(0, 2);
+  beta ~ normal(0, 2);
   tau ~ gamma(0.1, 0.1);
   for (i in 1:m) { # rows, m
     for (j in 1:k){ # columns, k
