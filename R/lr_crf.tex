@@ -12,7 +12,6 @@ This section considers augmenting logistic regression models with a spatial fiel
 \label{probprec}
 \end{figure}
 
-
 \subsection{Description}
 
 \subsubsection{Logistic regression (LR)}
@@ -23,7 +22,7 @@ $$
 logit(p_i) = \beta_0 + \beta_t  T_i
 $$
 
-where $logit(x)=log(x/(1-x))$. Rainfall has strong spatial correlation, and so to modify the LR model to incorporate a Gaussian conditional random field (CRF). 
+where $logit(x)=log(x/(1-x))$. Rainfall has strong spatial correlation, which can be introduced to the LR model by incorporating a Gaussian conditional random field (CRF). 
 
 \subsubsection{Simple Gaussian Markov Random Field (LR-CRF)}
 
@@ -33,13 +32,13 @@ $$
 logit(p_i) = \beta_0 + \beta_t T_i + w_i.
 $$
 
-In geostatistics this is called a Conditional Autoregressive (CAR) model \cite{Waller2010}, and the $W$ is interpreted as a type of random effect on the intercept. Then (reference to Besag) the joint distribution on the CRF $W$ is equivalent to defining the conditional distributions. Specifically,
+In geostatistics this is called a Conditional Autoregressive (CAR) model \cite{Waller2010}, and the $W$ is interpreted as a type of random effect on the intercept. Then the joint distribution on the CRF $W$ is equivalent to defining the conditional distributions \cite{Besag74}. Specifically,
 
 $$
-w_i | w_{i \neq j} \distas{} \, Normal\left( \frac{1}{m_i} \sum_{j \in n(i)} w_j, \frac{\tau^2}{m_i} \right),
+w_i | w_{j \neq i} \distas{} \, Normal\left( \frac{1}{m_i} \sum_{j \in n(i)} w_j, \frac{\tau^2}{m_i} \right),
 $$
 
-where $n(i)$ is the set of neighbors of pixel $i$, and $m_i=|n(i)|$. When the precision matrix is sparse, which is the case for the gridded rainfall data, sparse matrix operations on the precision matrix can drastically reduce the computational burden of inference in CAR models. In the case of this data it would not have been possible to naively store the precision matrix in memory.
+where $n(i)$ is the set of neighbors of pixel $i$, and $m_i=|n(i)|$. For the grid adjacency matrix the size of the nieghborhood is $m_i=4$ for interior pixels and $m_i$=2 and 3, respectively, for corner and edge pixels. When the precision matrix is sparse, which is the case for the rainfall data, sparse matrix operations on the precision matrix can drastically reduce the computational burden of inference in CAR models. In the case of this data it would not have been possible to naively store the precision matrix in memory.
 
 \subsubsection{Repeated LR with Gaussian Markov Random Field (LR-CRF+)}
 A two-stage latent variable model was motivated by the physical necessity of clouds for rain to occur. Although estimates for clouds were available, we desired a joint probabilistic model for cloud pixels as well as pixels in which rainfall ocurred. Temperature, however is still the only covariate. Clouds can be easily distinguished from ground because they are cooler.
@@ -53,10 +52,9 @@ $$
 The Gaussian Markov Random Field $W$ is structured in the same as in the LR-CRF model.
 
 \subsection{Implementation}
-A Bayesian analysis with weakly informative priors on $\beta$ was performed using the Stan probabilistic programming language. Only \emph{maximum a posteriori} estimates were found. The three models described above were compared using several different metrics. Note that these experiments are qualitatively different from the earlier ones because these results are from in-sample predictions.
+A Bayesian analysis with weakly informative priors on $\beta$ was performed using the Stan probabilistic programming language. Only \emph{maximum a posteriori} estimates were estimated. The three models described above were compared using several different metrics. Note that these experiments are qualitatively different from the earlier ones because these results are from in-sample predictions. However these are still useful for comparing how well different models describe the in-sample data.
 
 \subsection{Results}
-The two latent variable models were compared to a baseline logistic regression model. Numerical results are found in Table 1. The LR-CRF model made small but nontrivial improvements above the LR model, by all three metrics under consideration. This might indicate that taking into spatial structure has potential benefits. The LR-CRF+ model is notable for having by the most well-calibrated overall proportion of predicted rain, and also for having the highest sensitivity to rain. However these improvements come at the cost of a small decrease in specificity. Finally, as seen in the example maps of Figure 3, the LR-CRF+ model produces the most realistic-looking maps qualitatively. For example the LR-CRF+ produces sharper edges on its estimates of areas with rainfall.
 
 \begin{table}[ht]
 \centering
@@ -72,7 +70,25 @@ LR & 0.006 & 0.068 & 0.997 \\
 \end{tabular}
 \end{table}
 
-\subsection{Conclusion}
-This section has explored several latent variable models for rainfall. Model fits for two models based on logistic regression paired with Gaussian Markov random fields. These latent variables models were compared to a baseline logistric regression model. The latent variable models demonstrate potential for improvements over baseline logistic regression, but none of the models considered in this section perform well in an objective sense.
+The two latent variable models were compared to a baseline logistic regression model. Numerical results are found in Table 1. The LR-CRF model made small but nontrivial improvements above the LR model, by all three metrics under consideration. This might indicate that taking into spatial structure has benefits. The LR-CRF+ model is notable for having by the most well-calibrated overall proportion of predicted rain, and also for having the highest sensitivity to rain. However these improvements come at the cost of a small decrease in specificity. Finally, as seen in the example maps of Figure 3, the LR-CRF+ model produces the most realistic-looking maps qualitatively. For example the LR-CRF+ produces sharper edges on its estimates of areas with rainfall.
 
-Moreover, in this work they are not useful for predicting out-of-sample. For out-of-sample predictions may be interesting to consider a spatio-temporal model for the latent variable in which they use Kalman-filter style updates at each time step. Another reflection of the same problem is the limitation that the model results tend to be unstable due to the latent variables. The estimates of latent variables may become much more stable if they are smoothed between past and future time periods.
+It is also interesting to compare the parameter estimates between the models. Table 2 summarizes the two common $\beta_\cdot$ parameters between the 3 models, and also the the spatial correlation parameter $\tau$ for the two latent variable models. The LR and LR-CRF have similar estimates while the LR-CRF+ model has estimates with greater magnitude. Since both LR-CRF and LR-CRF+ had Normal priors, essentially penalizing parameters with $l_2$ loss, this might suggest that LR-CRF+ found more evidence in the data for greater parameter values. Although it performed better than LR-CRF in most regards, LR-CRF and LR-CRF+ agree closely on the spatial correlation $\tau$. 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr}
+  \hline
+Model & $\beta_0$ & $\beta_1$ & $\tau$ \\ 
+  \hline
+LR & -3.927 & -1.091 & $\cdot$ \\ 
+LR-CRF & -3.8663735 & -1.0516349 & 0.8411211 \\ 
+LR-CRF+ & -5.2354374 & -2.1260225  &  0.8612925 \\ 
+   \hline
+   Truth & 0.040 & 1.000 & 1.000
+\end{tabular}
+\end{table}
+
+\subsection{Conclusion}
+This section has explored several latent variable models for rainfall. Model fits for two models based on logistic regression paired with Gaussian Markov random fields. These latent variables models were compared to a baseline logistic regression model. The latent variable models demonstrate potential for improvements over baseline logistic regression, but none of the models considered in this section perform well in an objective sense.
+
+Moreover, in this work they are not useful for predicting out-of-sample. For out-of-sample predictions it may be interesting to consider a spatio-temporal model for the latent variable in which they use Kalman-filter style updates at each time step. Another reflection of the same problem is the limitation that the model results tend to be unstable due to the latent variables. The estimates of latent variables may become much more stable if they are smoothed between past and future time periods.
