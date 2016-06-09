@@ -1,0 +1,18 @@
+@ARTICLE{Domke13, 
+author={J. Domke}, 
+journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+title={Learning Graphical Model Parameters with Approximate Marginal Inference}, 
+year={2013}, 
+volume={35}, 
+number={10}, 
+pages={2454-2467}, 
+keywords={approximation theory;computational complexity;inference mechanisms;learning (artificial intelligence);solid modelling;approximate marginal inference;computational complexity;graphical model parameter learning;inference approximations;likelihood-based approximations;likelihood-based learning;marginalization-based learning;model misspecification;Approximation algorithms;Entropy;Function approximation;Markov processes;Optimization;Vectors;Graphical models;conditional random fields;inference;machine learning;segmentation;Algorithms;Artificial Intelligence;Computer Simulation;Models, Statistical;Pattern Recognition, Automated;Reproducibility of Results;Sensitivity and Specificity;Subtraction Technique}, 
+doi={10.1109/TPAMI.2013.31}, 
+ISSN={0162-8828}, 
+month={Oct},}
+@online{persianccs,
+  author = {CHRS},
+  title = {The PERSIANN System Fine Resolution Precipitation Estimates Using PERSIANN-Cloud Classification System},
+  year = 2014,
+  url = {http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html},
+}
