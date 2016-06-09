@@ -7,7 +7,7 @@ Precipitation plays a major role in many natural and societal systems, but direc
 For this project we model precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. In order to take into account the spatial dependencies inherent in patterns of precipitation, we made conditional random fields where the precipitation values in the pixels are conditioned on temperature and other features. We tried three different methods for modeling this CRF, including Exponential Families, Logistic Regression, and Loopy BP. 
 
 \subsection{Data Set}
-We will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temperal resolution under consideration is the finest available, 30 minutes. The following web link provides a more detailed description of the data set. 
+We will use PERSIAN-CCS data set which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. Not all pixels are part of cloud patches. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temperal resolution under consideration is the finest available, 30 minutes. The following web link provides a more detailed description of the data set. **ADD REF**
 
 \begin{lstlisting}
 http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html
@@ -25,21 +25,25 @@ Here, $Z(x)$ is the partition function that normalizes the distribution, $\psi(y
 \\
 We will take a 2-D image and make each pixel a separate node in our graph. Our graph will be a 4-connected grid so two pixels will be connected via an edge if they are immediate neighbors horizontally or vertically. \\
 \\
-Our input consists of features for each node and edge, denoted by $x_i$ and $w_c$ respectively. The edge features for clique $c$ are used to obtain a conditional distribution of values for the nodes connected by $c$ and the node features for node $i$ are used to obtain a distribution of values for only node $i$. Our equation now becomes as follows:
+Our input consists of features for each node and edge, denoted by $x_i$ and $w_c$ respectively. The edge features for clique $c$ are used to obtain a conditional distribution of values for the nodes in $c$ and the node features for node $i$ are used to obtain a distribution of values for only node $i$. Our equation now becomes as follows:
 \[
 p(y|x) = \frac{1}{Z(x)} \prod_i{\psi(y_i,x_i)} \prod_{c}{\psi(y_c,w_c)}
 \]
-We will learn two matrices $\theta$ and $\phi$. The matrix $\theta$ will be multiplied by the node features to determine the log potentials for each value of node $i$. The matrix $\phi$ will be multiplied by the edge features to determine the log potentials for each pair of values for the nodes $i$ and $j$ connected by an edge in our graph. The model is now as follows:
+We will learn two matrices $\theta$ and $\phi$. The matrix $\theta$ will be multiplied by the node features to determine the log potentials for each value of node $i$. The matrix $\phi$ will be multiplied by the edge features to determine the log potentials for each pair of values for the nodes $i$ and $j$ in clique $c$. The model is now as follows:
 \[
 p(y|x) = \frac{1}{Z(x)} \prod_i{exp(\theta x_i)} \prod_{ij}{exp(\phi w_{ij})}
 \]
-Our goal will be to find $\theta$ and $\phi$ matrices that minimize a loss function given our training data. Let $\mu$ be the accuracy of a clique marginal. For these results, the loss function is defined as the clique logistic loss (Domke 2013)
+Our goal will be to find $\theta$ and $\phi$ matrices that minimize a loss function given our training data. 
+
+\subsection{Learning the Model}
+
+For our purposes, we used the Graphical Models Toolbox by Justin Domke. The default loss function employed was Clique Logistic Loss (Domke 2013).  Let $\mu$ be the accuracy of a clique marginal, then this loss function is defined as:
 \[
 L = - \sum_c {log \, \mu(y_c; \theta, \phi, x_i, x_j, w_c)}
 \]
-To perform inference on this model, Tree-Reweighted Belief Propagation was employed. This method replaces the marginal polytope with a super-set before computing the message passing updates. Approximations are done to ensure there is a tractable upper bound on the log partition function (Domke 2013). \\
+To perform inference on this model, Tree-Reweighted Belief Propagation was used. This method replaces the marginal polytope with a super-set before computing the message passing updates. Approximations are done to ensure there is a tractable upper bound on the log partition function. \\
 \\
-Truncated Fitting was employed for the learning algorithm. In summary, this method involved performing N iterations ($N=5$ for our implementation) of inference and then calculating the loss function regardless of whether or not convergence has occurred. The gradient of the loss function is then computed and this is used to update the model parameters. Finally, N iterations of inference are done in reverse order. 
+Truncated Fitting was employed for the algorithm. In summary, N iterations ($N=5$ for our implementation) of inference were performed and then the loss function was calculated regardless of whether or not convergence has occurred. The gradient of the loss function is then computed and this is used to update the model parameters. Finally, N iterations of inference are done in reverse order. 
 
 \subsection{Feature Setup}
 
@@ -74,11 +78,11 @@ Our training data consisted of temperature and precipitation information from Se
 \end{figure}
 Figure \ref{labelProb2} shows the target labels and probability of rainfall for one of the training maps. Figure \ref{labelProb} shows the same thing for one of the test maps. Results for the other maps were quite similar. The baseline error (if we predict no rain for all the cloud pixels) was $30.7\%$ for the training map and $19.9\%$ for the test map. No matter what score threshold was used for the predictor, the pixelwise error was higher than the baseline for both maps. \\
 \\
-The probabilities learned are at least somewhat on par with what we hoped even if they can't be used for a predictor yet. For the training map, the average marginal probability of rainfall among cloud pixels with no rain was $0.1248$ while the probability among cloud pixels with rain was $0.1547$. For the test map, the probabilities were $0.1997$ and $0.2619$ respectively.  
+The probabilities learned are at least somewhat on par with what we hoped even if they can't be used for a predictor. For the training map, the average marginal probability of rainfall among cloud pixels with no rain was $0.1248$ while the probability among cloud pixels with rain was $0.1547$. For the test map, the probabilities were $0.1997$ and $0.2619$ respectively.  
 
 
 \subsection{Conclusion}
 
-The results were quite discouraging so much must be needed to improve the probabilistic model. There is low probability of precipitation even in pixels where rainfall occurred. Our classes are highly imbalanced in that there are much fewer cloud pixels with rainfall than without rainfall. More needs to be done to correct for this imbalance. One problem could be that the edge features are inspired by segmentation in Computer Vision meaning that region boundaries are assumed to be quite obvious in the observed data. That has not occurred with our data thus we need to rethink what we use as our edge features in the model. The other potential problem is that our loss function sums over the clique marginals instead of calculating the likelihood over the whole map. If we attempt to optimize the likelihood over the whole map then we might obtain a better prediction. 
+The results were quite discouraging so much must be done to improve the probabilistic model. There is low probability of precipitation even in pixels where rainfall occurred. Our classes are highly imbalanced in that there are much fewer cloud pixels with rainfall than without rainfall. More needs to be done to correct for this imbalance. One problem could be that the edge features are inspired by segmentation in Computer Vision meaning that region boundaries are assumed to be quite obvious in the observed data. That has not occurred with our data. The other potential problem is that our loss function sums over the clique marginals instead of calculating the likelihood over the whole map. If we attempt to optimize the likelihood over the whole map then we are predicting jointly which might improve the prediction. 
 
 

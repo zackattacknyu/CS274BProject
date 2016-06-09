@@ -16,3 +16,9 @@ month={Oct},}
   year = 2014,
   url = {http://chrs.web.uci.edu/research/satellite_precipitation/activities01.html},
 }
+@online{domkeToolbox,
+  author = {J. Domke},
+  title = {Justin's Graphical Models / Conditional Random Field Toolbox},
+  year = 2015,
+  url = {http://users.cecs.anu.edu.au/~jdomke/JGMT/},
+}
