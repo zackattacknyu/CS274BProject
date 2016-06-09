@@ -43,13 +43,13 @@ where $n(i)$ is the set of neighbors of pixel $i$, and $m_i=|n(i)|$. For the gri
 \subsubsection{Repeated LR with Gaussian Markov Random Field (LR-CRF+)}
 A two-stage latent variable model was motivated by the physical necessity of clouds for rain to occur. Although estimates for clouds were available, we desired a joint probabilistic model for cloud pixels as well as pixels in which rainfall ocurred. Temperature, however is still the only covariate. Clouds can be easily distinguished from ground because they are cooler.
 
-Simply conditioning on a pixel belonging to a cloud might improve the model. Furthermore, the LR parameters for rainfall might well depend on whether or no the pixel belongs to a cloud. This model is relatively ad-hoc, but the intuition is that the latent field is placed on the LR for determining cloudiness, and a further LR predicts rainfall. Roughly, $P(rain, cloud)= P(rain| cloud)*P(cloud)$. The model here specifies rainfall probabilities $p_i$ as
+Simply conditioning on a pixel belonging to a cloud might improve the model. Furthermore, the LR parameters for rainfall might well depend on whether or not the pixel belongs to a cloud. This model is relatively ad-hoc, but the intuition is that the latent field is placed on the LR for determining cloudiness, and a further LR predicts rainfall. Roughly, $P(rain, cloud)= P(rain| cloud)*P(cloud)$. The model here specifies rainfall probabilities $p_i$ as
 
 $$
-p_i = logistic(\beta_0 + \beta_t T_i + w_i)  logistic(\beta_p + \beta_{pt} T_i).
+p_i = logistic(\beta_0 + \beta_t T_i + w_i)  logistic(\beta_p + \beta_{pt} T_i),
 $$
 
-The Gaussian Markov Random Field $W$ is structured in the same as in the LR-CRF model.
+where $logistic=logit^{-1}=\exp{x}/(1+\exp{x})$. The Gaussian Markov Random Field $W$ is structured in the same as in the LR-CRF model.
 
 \subsection{Implementation}
 A Bayesian analysis with weakly informative priors on $\beta$ was performed using the Stan probabilistic programming language. Only \emph{maximum a posteriori} estimates were estimated. The three models described above were compared using several different metrics. Note that these experiments are qualitatively different from the earlier ones because these results are from in-sample predictions. However these are still useful for comparing how well different models describe the in-sample data.
@@ -81,8 +81,8 @@ It is also interesting to compare the parameter estimates between the models. Ta
 Model & $\beta_0$ & $\beta_1$ & $\tau$ \\ 
   \hline
 LR & -3.927 & -1.091 & $\cdot$ \\ 
-LR-CRF & -3.8663735 & -1.0516349 & 0.8411211 \\ 
-LR-CRF+ & -5.2354374 & -2.1260225  &  0.8612925 \\ 
+LR-CRF & -3.866 & -1.051 & 0.841 \\ 
+LR-CRF+ & -5.235 & -2.126  &  0.861 \\ 
    \hline
    Truth & 0.040 & 1.000 & 1.000
 \end{tabular}
