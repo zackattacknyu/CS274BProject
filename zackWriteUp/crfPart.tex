@@ -4,7 +4,7 @@ Precipitation plays a major role in many natural and societal systems, but direc
 
 \subsection{Models}
 
-For this project we model precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. In order to take into account the spatial dependencies inherent in patterns of precipitation, we made conditional random fields where the precipitation values in the pixels are conditioned on temperature and other features. We tried three different methods for modeling this CRF, including Exponential Families, Logistic Regression, and Loopy BP. 
+For this project we model precipitation given temperature on a regular grid of pixels, where the values of each pixel corresponds to average amounts over a fixed time window. In order to take into account the spatial dependencies inherent in patterns of precipitation, we made conditional random fields (CRFs) where the precipitation values in the pixels are conditioned on temperature and other features. We tried two different methods for modeling using CRFs, Exponential Families, Logistic Regression with Gaussian Markov random fields.
 
 \subsection{Data Set}
 We will use PERSIAN-CCS data set \cite{persianccs} which consists of temperature data as well as features related to a particular cloud patch in which a pixel is part. Each pixel, which represents a small geographic area, has 1 temperature feature and 12 features related to its cloud patch. Not all pixels are part of cloud patches. There is also a target $y$ value for that pixel obtained via radar data. The region of interest is the western United States and the temporal resolution under consideration is the finest available, 30 minutes. 
@@ -15,9 +15,9 @@ We will use PERSIAN-CCS data set \cite{persianccs} which consists of temperature
 
 Conditional Random Fields are discriminative models for the conditional distribution of labels $y$ given observations $x$. For exponential family purposes it will be defined over a graph structure as follows:
 \[
-p(y|x) = \frac{1}{Z(x)} \prod_i{\psi(y_i,x)} \prod_{c}{\psi(y_c,x)}
+p(y|x) = \frac{1}{Z(x)} \prod_i{\psi(y_i,x_i)} \prod_{c}{\psi(y_c,x_c)}
 \]
-Here, $Z(x)$ is the partition function that normalizes the distribution, $\psi(y_i,x)$ is the potential function for the states of node $i$ given the input $x$, and $\psi(y_c,x)$ is the potential function for the states of nodes in clique $c$ given the input $x$. The potential function are exponentials.\\
+Here, $Z(x)$ is the partition function that normalizes the distribution, $\psi(y_i,x_i)$ is the potential function for the states of node $i$ given the input $x$, and $\psi(y_c,x_c)$ is the potential function for the states of nodes in clique $c$ given the input $x$. The potential function are exponentials.\\
 \\
 We will take a 2-D image and make each pixel a separate node in our graph. Our graph will be a 4-connected grid so two pixels will be connected via an edge if they are immediate neighbors horizontally or vertically. \\
 \\
