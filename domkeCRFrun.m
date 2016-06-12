@@ -53,7 +53,9 @@ p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 save('domkeCRFrun18.mat','p');
 
 %%
-load('domkeCRFrun19','p');
+%load('domkeCRFrun19','p');
+load('domkeCRFrun_3edgeFeats','p');
+%load('domkeCRFrun_3edgeFeats_3nodes','p');
 %load('domkeCRFrun_emLoss_250times','p');
 %load('domkeCRFrun_constEdges','p');
 %load('domkeCRFrun_constEdges_withPairs','p');
@@ -71,21 +73,28 @@ numRandInds = 3;
 
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 %in order of perceived goodness of pred
-%trialInds2 = [325 1114 1152 204 284 1196 1199];
+trialInds2 = [325 1114 1152 204 284 1196 1199];
 %trialInds2 = [1196]
-trialInds2 = [698] ; %for Sep 2011 training
+%trialInds2 = [698] ; %for Sep 2011 training
 
+%{
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles(trialInds2,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+
+%}
+
+[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+    obtainDataFromFiles3(trialInds2,...
+    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
 %edge_params = {{'const'},{'pairtypes'}};
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles2(trialInds2,...
 %    xFiles12,yFiles12,ccsFiles12,xOneFiles12,edge_params);
+%%
 
 
-cutoff = 0.85;
 %%
 
 figure
@@ -122,7 +131,7 @@ for n=1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.85%0.4:0.05:0.95
+    for cutoff = 0.8%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
@@ -330,7 +339,7 @@ ylabel('AUC');
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-numToSee = 1;
+numToSee = 4;
 biCur = biArrays{numToSee};
 normFactors23 = sum(biCur(2:3,:));
 

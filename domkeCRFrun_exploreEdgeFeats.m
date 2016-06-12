@@ -53,6 +53,23 @@ end
     obtainDataFromFiles(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 %%
+
+%explore following:
+% constant, temp at i, temp at j
+nn=7;
+newEdgeFeats = edgeify_im3(tempData{nn},models_test{nn}.pairs);
+
+totalN = size(newEdgeFeats,1);
+numRandInds = 200;
+trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+
+figure
+hold on
+plot(newEdgeFeats(trialInds,1),'k-')
+plot(newEdgeFeats(trialInds,2),'r-')
+plot(newEdgeFeats(trialInds,3),'b-')
+hold off
+%%
 for n = 4:N
    figure
    subplot(1,3,1)
