@@ -44,7 +44,6 @@ options.opt_display = 0;
 load('domkeCRFrun_3edgeFeats','p');
 totalN2 = length(xFiles12);
 
-timeUse = 204;
 trialInds2 = [timeUse];
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels] = ...
