@@ -73,8 +73,9 @@ numRandInds = 3;
 
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 %in order of perceived goodness of pred
-trialInds2 = [325 1114 1152 204 284 1196 1199];
+%trialInds2 = [325 1114 1152 204 284 1196 1199];
 %trialInds2 = [1196]
+trialInds2 = [540]; %Homer's map, from Sep 2011
 %trialInds2 = [698] ; %for Sep 2011 training
 
 %{
@@ -84,13 +85,13 @@ trialInds2 = [325 1114 1152 204 284 1196 1199];
 
 %}
 
-[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-    obtainDataFromFiles3(trialInds2,...
-    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
-
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
-%    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+%    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+
+[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+    obtainDataFromFiles3(trialInds2,...
+    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
 
 %edge_params = {{'const'},{'pairtypes'}};
@@ -98,6 +99,13 @@ trialInds2 = [325 1114 1152 204 284 1196 1199];
 %    obtainDataFromFiles2(trialInds2,...
 %    xFiles12,yFiles12,ccsFiles12,xOneFiles12,edge_params);
 %%
+
+for i = 1:1000
+   currentName = xFiles11(i).name;
+   if(strcmp(currentName,'xdata1109120545.mat'))
+      i 
+   end
+end
 
 
 %%
@@ -345,7 +353,7 @@ ylabel('AUC');
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-numToSee = 3;
+numToSee = 1;
 biCur = biArrays{numToSee};
 normFactors23 = sum(biCur(2:3,:));
 

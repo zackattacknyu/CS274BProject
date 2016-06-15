@@ -29,8 +29,8 @@ trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 
 %loss_spec = 'trunc_cl_trwpll_5';
-loss_spec = 'trunc_em_trwpll_10';
-%loss_spec = 'em_mnf_1e5';
+%loss_spec = 'trunc_em_trwpll_10';
+loss_spec = 'em_mnf_1e5';
 %loss_spec = 'trunc_uquad_trwpll_5';
 
 crf_type  = 'linear_linear';
@@ -50,5 +50,5 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_3edgeFeats_emTRW.mat','p');
+save('domkeCRFrun_3edgeFeats_emMNF.mat','p');
 

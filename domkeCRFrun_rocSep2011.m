@@ -21,8 +21,9 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 160;
-trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+numRandInds = 100;
+load('highestPrecipInds1109');
+trialInds = highestPrecipInds(1:numRandInds);
 
 loss_spec = 'trunc_cl_trwpll_5';
 %loss_spec = 'em_mnf_1e5';
@@ -76,7 +77,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2011_3edgeFeats.mat',...
+save('ROCvars_sep2011_highestPrecipMaps_3edgeFeats.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc');
 %%
