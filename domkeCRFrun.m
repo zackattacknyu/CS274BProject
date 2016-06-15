@@ -88,6 +88,11 @@ trialInds2 = [325 1114 1152 204 284 1196 1199];
     obtainDataFromFiles3(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
+%[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+%    obtainDataFromFiles3(trialInds2,...
+%    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+
+
 %edge_params = {{'const'},{'pairtypes'}};
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles2(trialInds2,...
@@ -131,7 +136,7 @@ for n=1:length(feats_test)
     fprintf('CCS Pred Error: %f \n\n',CCS(n)/T(n));
     
     %SHOW THESE RESULTS. MAKE MULTIPLE SLIDES
-    for cutoff = 0.8%0.4:0.05:0.95
+    for cutoff = [0.8 0.9]%0.4:0.05:0.95
         
         x_pred = getPredLabels(b_i,cutoff,sizr,sizc);
         
@@ -283,12 +288,13 @@ for numToSee = 1:7
     %title(strcat('ROC curve for ',num2str(numToSee)));
     title('ROC curves');
     plot(rocx,rocy,'r-');
-    plot(ccsROCx,ccsROCy,'k-');
-    plot(ccsROCxx(2),ccsROCyy(2),'kx','LineWidth',2);
+    %plot(ccsROCx,ccsROCy,'k-');
+    %plot(ccsROCxx(2),ccsROCyy(2),'kx','LineWidth',2);
     plot(0:0.05:1,0:0.05:1,'b--');
     xlabel('False Positive Rate');
     ylabel('True Positive Rate');
-    legend('CRF ROC curve','CCS ROC Curve','CCS ROC if threshold==1','Baseline ROC');
+    legend('CRF ROC curve','Baseline ROC');
+    %legend('CRF ROC curve','CCS ROC Curve','CCS ROC if threshold==1','Baseline ROC');
     hold off
     
     subplot(1,2,2);
@@ -339,7 +345,7 @@ ylabel('AUC');
 
 %TODO: SHOW THE FIGURES PRODUCED HERE TO IHLER
 
-numToSee = 4;
+numToSee = 3;
 biCur = biArrays{numToSee};
 normFactors23 = sum(biCur(2:3,:));
 
@@ -356,14 +362,16 @@ bi3re=reshape(biCur(3,:),sizr,sizc);
 figure
 subplot(1,2,1);
 imagesc(labels_test{numToSee}); colorbar;
+colormap jet;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 axis off
 
 subplot(1,2,2);
 imagesc(bi3re); colorbar;
+colormap jet;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 axis off
-
+%%
 figure
 imagesc(labels_test{numToSee}); colorbar;
 title('Labels');
