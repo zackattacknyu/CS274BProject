@@ -428,9 +428,9 @@ figure
 hold on
 
 ii = 1;
-legendArray = cell(1,6);
+legendArray = cell(1,7);
 %for numToIncl=[1 3 5 10]
-for indToIncl=[1 2 4 6 8 10]
+for indToIncl=1:7
     
     allCloudLabels = [];
     allCloudScores = [];
@@ -447,13 +447,12 @@ for indToIncl=[1 2 4 6 8 10]
         ii = ii+1;
     end
 
-    [rocx,rocy] = perfcurve(allCloudLabels,allCloudScores,3);
-    plot(rocx,rocy);
-    xlabel('False positive rate')
-    ylabel('True positive rate')
-
 end
-legend(legendArray);
+[rocx,rocy] = perfcurve(allCloudLabels,allCloudScores,3);
+plot(rocx,rocy);
+xlabel('False positive rate')
+ylabel('True positive rate')
+%legend(legendArray);
 hold off
 
 

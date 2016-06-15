@@ -26,3 +26,4 @@
 *.blg
 *.log
 /*.synctex.gz
+/ROCvars_sep2012_3edgeFeats.mat
