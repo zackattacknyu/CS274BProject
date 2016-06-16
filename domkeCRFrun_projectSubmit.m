@@ -32,20 +32,24 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
-%%
+
 [feats,efeats,labels,models,precipImages] = obtainDataFromFiles(trialInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
+%TRAINING WAS KICKED OFF HERE
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
-%%
+
+
+%REST OF CODE IS TESTS DONE AFTER PARAMETERS FOUND
+
 %UNCOMMENT THIS BLOCK IF USING SEP 2011 MAPS
-trialInds = [698] ; %for Sep 2011 training
+trialInds = [698] ; 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles(trialInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
-%UNCOMMENT THIS BLOCK FOR SEP 2012 MAPS
+%UNCOMMENT THIS BLOCK IF USING SEP 2012 MAPS
 %{
 trialInds2 = [1196] %for Sep 2012 map
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -53,6 +57,7 @@ trialInds2 = [1196] %for Sep 2012 map
     xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 %}
 
+%PIXELWISE ERROR RATES COMPUTED HERE
 fprintf('get the marginals for test images...\n');
 close all
 E = zeros(1,length(feats_test));
@@ -102,28 +107,26 @@ end
 fprintf('Cumulative Stats: \n');
 fprintf('total pixelwise error on test data: %f \n', sum(E)/sum(T))
 fprintf('total baseline error: %f \n',sum(Base)/sum(T));
-%%
 
-%This produces the probability and label map
+
 numToSee=1;
 biCur = biArrays{numToSee};
 bi3re=reshape(biCur(3,:),sizr,sizc);
 
+%PROBABILITY OF RAINFALL AND LABEL MAPS PRODUCED HERE
+%   FIGURE 1 AND 2 IN THE PAPER
 figure
 subplot(1,2,1);
 imagesc(labels_test{numToSee}); colorbar;
 colormap jet;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 axis off
-
 subplot(1,2,2);
 imagesc(bi3re); colorbar;
 colormap jet;
 drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
 axis off
 
-%average marg probability of rainfall among cloud pixels with no rain
-avgAmongNoRain = mean(bi3re(labels_test{numToSee}==2))
-
-%average marg probability of rainfall among cloud pixels with rainfall
-avgAmongRain = mean(bi3re(labels_test{numToSee}==3))
+%AVERAGE MARGINAL PROBS OF RAINFALL COMPUTED HERE
+avgAmongNoRain = mean(bi3re(labels_test{numToSee}==2)) %among no rain pixels
+avgAmongRain = mean(bi3re(labels_test{numToSee}==3)) %among rain pixels
