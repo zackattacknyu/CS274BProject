@@ -21,12 +21,9 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 160;
+numRandInds = 100;
+
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
-
-%load('highestPrecipInds1109');
-%trialInds = highestPrecipInds(1:numRandInds);
-
 
 loss_spec = 'trunc_cl_trwpll_5';
 %loss_spec = 'em_mnf_1e5';
@@ -43,16 +40,9 @@ options.opt_display = 0;
 
 load('domkeCRFrun_3edgeFeats_emTRW','p');
 
-totalN2 = length(xFiles12);
-%trialInds = 1:totalN;
-numRandInds = 100;
-
-load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
-
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-    obtainDataFromFiles3(trialInds2,...
-    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+    obtainDataFromFiles3(trialInds,...
+    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
 fprintf('get the marginals for test images...\n');
 close all
@@ -75,7 +65,7 @@ end
 allCloudLabels = [];
 allCloudScores = [];
 
-for n = 1:length(trialInds2)
+for n = 1:length(trialInds)
     curTargetLabels = labels_test{n};
     cloudPixels = find(curTargetLabels>1);
     allCloudLabels = [allCloudLabels curTargetLabels(cloudPixels)'];
@@ -87,7 +77,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2012_highestPrecipMaps_3edgeFeats_emTRW.mat',...
+save('ROCvars_sep2011_3edgeFeats_emTRW.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc');
 %%

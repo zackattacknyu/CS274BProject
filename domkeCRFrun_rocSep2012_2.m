@@ -47,8 +47,7 @@ totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
 numRandInds = 100;
 
-load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
+trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3(trialInds2,...
@@ -87,7 +86,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2012_highestPrecipMaps_3edgeFeats_emTRW.mat',...
+save('ROCvars_sep2012_3edgeFeats_emTRW.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc');
 %%
