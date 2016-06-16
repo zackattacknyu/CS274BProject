@@ -28,8 +28,8 @@ trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 %trialInds = highestPrecipInds(1:numRandInds);
 
 
-loss_spec = 'trunc_cl_trwpll_5';
-%loss_spec = 'em_mnf_1e5';
+%loss_spec = 'trunc_cl_trwpll_5';
+loss_spec = 'em_mnf_1e5';
 %loss_spec = 'trunc_uquad_trwpll_5';
 
 crf_type  = 'linear_linear';
@@ -41,7 +41,7 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
-load('domkeCRFrun_3edgeFeats_emTRW','p');
+load('domkeCRFrun_3edgeFeats_emMNF','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
@@ -87,7 +87,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2012_highestPrecipMaps_3edgeFeats_emTRW.mat',...
+save('ROCvars_sep2012_highestPrecipMaps_3edgeFeats_emMNF.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc');
 %%
