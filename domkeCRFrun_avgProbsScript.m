@@ -23,3 +23,11 @@ end
 
 avgProbAmongRainPixels = mean(allProbsAmongRain);
 avgProbAmongNoRainPixels = mean(allProbsAmongNoRain);
+
+%{
+IMPORTANT NOTE:
+IN AVGPROBS_SEP2011.MAT AND
+IN AVGPROBS_SEP2012.MAT THE 
+AVERAGE PROBABILITIES ARE SWITCHED DUE TO AN
+EARLIER BUG
+%}
