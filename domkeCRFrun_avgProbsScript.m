@@ -10,8 +10,8 @@ for n=1:length(feats_test)
     bi3re=reshape(b_i(3,:),sizr,sizc);
     curTargetLabels = labels_test{n};
 
-    rainfallPixels = find(curTargetLabels==2);
-    noRainPixels = find(curTargetLabels==3);
+    rainfallPixels = find(curTargetLabels==3);
+    noRainPixels = find(curTargetLabels==2);
     
     probsAmongNoRain = bi3re(noRainPixels);
     probsAmongRain = bi3re(rainfallPixels);
