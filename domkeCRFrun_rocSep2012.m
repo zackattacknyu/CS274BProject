@@ -47,6 +47,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
+%load('domkeCRFrun_3edgeFeats_emMNF','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;

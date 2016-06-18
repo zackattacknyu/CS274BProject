@@ -38,9 +38,11 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
+
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
 load('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat')
 trialInds = trainingInds;
+%load('domkeCRFrun_3edgeFeats_emMNF','p');
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3(trialInds,...
