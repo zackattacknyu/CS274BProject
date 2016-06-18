@@ -21,15 +21,19 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 200;
+numRandInds = 300;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+randArrange = randperm(length(trialInds));
+splitNum = floor(0.6*length(trialInds));
+trainingInds = sort(trialInds(randArrange(1:splitNum)));
+validationInds = sort(trialInds(randArrange((splitNum+1):end)));
 
 %load('highestPrecipInds1109');
 %trialInds = highestPrecipInds(1:numRandInds);
 
 
-%loss_spec = 'trunc_cl_trwpll_5';
-loss_spec = 'trunc_em_trwpll_10';
+loss_spec = 'trunc_cl_trwpll_5';
+%loss_spec = 'trunc_em_trwpll_10';
 %loss_spec = 'em_mnf_1e5';
 %loss_spec = 'trunc_uquad_trwpll_5';
 
@@ -43,12 +47,12 @@ options.reg         = 1e-4;
 options.opt_display = 0;
 
 
-[feats,efeats,labels,models,precipImages] = obtainDataFromFiles3(trialInds,...
+[feats,efeats,labels,models,precipImages] = obtainDataFromFiles3(trainingInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_3edgeFeats_emTRW.mat','p');
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat','p','trialInds','trainingInds','validationInds');
 

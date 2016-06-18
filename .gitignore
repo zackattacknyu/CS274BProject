@@ -32,3 +32,8 @@
 /ROCvars_sep2012_highestPrecipMaps_3edgeFeats.mat
 /ROCvars_sep2012_highestPrecipMaps_3edgeFeats_emTRW.mat
 /ROCvars_sep2011_3edgeFeats_emTRW.mat
+/ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds.mat
+/ROCvars_sep2011_3edgeFeats_cliqueLoss_validationInds.mat
+/ROCvars_sep2012_3edgeFeats_cliqueLoss_highestInds.mat
+/ROCvars_sep2012_3edgeFeats_emMNF_highestInds.mat
+/ROCvars_sep2012_3edgeFeats_emMNF_randInds.mat

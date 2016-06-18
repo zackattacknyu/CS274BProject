@@ -21,13 +21,13 @@ figure
 hold on
 
 kVals = 0:maxN;
-expValuesSafe = kVals.*10;
+expValuesSafe = (kVals+1).*10;
 plot(expValuesSafe, 'r-');
 
 colors = {'g-','k-','b-'};
 pVals = [0.05 0.1 0.2];
 dVals = [15 10 5];
-rVals = [100 50 40];
+rVals = [300 50 40];
 ii = 1;
 for jj = 1:3
     

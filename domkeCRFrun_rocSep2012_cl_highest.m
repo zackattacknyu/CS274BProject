@@ -21,9 +21,12 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 100;
+numRandInds = 160;
+trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
+
 %load('highestPrecipInds1109');
 %trialInds = highestPrecipInds(1:numRandInds);
+
 
 loss_spec = 'trunc_cl_trwpll_5';
 %loss_spec = 'em_mnf_1e5';
@@ -38,13 +41,23 @@ options.rho         = rho;
 options.reg         = 1e-4;
 options.opt_display = 0;
 
+%original clique loss
+load('domkeCRFrun_3edgeFeats','p');
+
+%em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat')
-trialInds = trainingInds;
+
+totalN2 = length(xFiles12);
+%trialInds = 1:totalN;
+numRandInds = 100;
+
+load('highestPrecipInds1209');
+trialInds2 = highestPrecipInds(1:numRandInds);
+%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-    obtainDataFromFiles3(trialInds,...
-    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+    obtainDataFromFiles3(trialInds2,...
+    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
 fprintf('get the marginals for test images...\n');
 close all
@@ -67,7 +80,7 @@ end
 allCloudLabels = [];
 allCloudScores = [];
 
-for n = 1:length(trialInds)
+for n = 1:length(trialInds2)
     curTargetLabels = labels_test{n};
     cloudPixels = find(curTargetLabels>1);
     allCloudLabels = [allCloudLabels curTargetLabels(cloudPixels)'];
@@ -79,29 +92,10 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2011_highestPrecipMaps_3edgeFeats_cliqueLoss_trainingInds.mat',...
+save('ROCvars_sep2012_3edgeFeats_cliqueLoss_highestInds.mat',...
     'rocx','rocy','rocThr','rocAuc',...
-    'probDet','falseAlarm','thr','auc');
-%%
-figure
-hold on
-plot(rocx,rocy);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
+    'probDet','falseAlarm','thr','auc','trialInds2');
 
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThr,rocy,'r-');
-plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-legend('True Positive','False Positive','Accuracy');
-xlabel('Score Threshold for Class 3');
-ylabel('Rate');
-hold off
 
 
 
