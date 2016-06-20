@@ -21,10 +21,10 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 300;
+numRandInds = 250;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 randArrange = randperm(length(trialInds));
-splitNum = floor(0.6*length(trialInds));
+splitNum = floor(0.8*length(trialInds));
 trainingInds = sort(trialInds(randArrange(1:splitNum)));
 validationInds = sort(trialInds(randArrange((splitNum+1):end)));
 
@@ -54,5 +54,5 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat','p','trialInds','trainingInds','validationInds');
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new2.mat','p','trialInds','trainingInds','validationInds');
 

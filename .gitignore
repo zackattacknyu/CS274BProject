@@ -41,3 +41,6 @@
 /ROCvars_sep2011_highestPrecipMaps_3edgeFeats_emMNF.mat
 /avgProbs_sep2012.mat
 /avgProbs_sep2011.mat
+/ROCvars_sep2012_3edgeFeats_cliqueLoss_randInds_newP.mat
+/avgProbs_sep2011_validationData.mat
+/avgProbs_sep2011_trainingData.mat

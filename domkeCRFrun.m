@@ -21,7 +21,7 @@ xOneFiles12 = dir('projectData/xone1209*');
 
 totalN = length(xFiles11);
 %trialInds = 1:totalN;
-numRandInds = 160;
+numRandInds = 10;
 trialInds = sort(unique(floor(rand(1,numRandInds)*totalN)));
 
 %load('highestPrecipInds1109');
@@ -45,7 +45,7 @@ options.opt_display = 0;
 %feats{n}  = featurize_im(ims{n},feat_params);
 [feats,efeats,labels,models,precipImages] = obtainDataFromFiles(trialInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
-
+%%
 fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
@@ -73,9 +73,9 @@ numRandInds = 3;
 
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 %in order of perceived goodness of pred
-%trialInds2 = [325 1114 1152 204 284 1196 1199];
+trialInds2 = [325 1114 1152 204 284 1196 1199];
 %trialInds2 = [1196]
-trialInds2 = [540]; %Homer's map, from Sep 2011
+%trialInds2 = [540]; %Homer's map, from Sep 2011
 %trialInds2 = [698] ; %for Sep 2011 training
 
 %{
@@ -85,13 +85,13 @@ trialInds2 = [540]; %Homer's map, from Sep 2011
 
 %}
 
-%[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-%    obtainDataFromFiles3(trialInds2,...
-%    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
-
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3(trialInds2,...
-    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+
+%[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+%    obtainDataFromFiles3(trialInds2,...
+%    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
 
 %edge_params = {{'const'},{'pairtypes'}};
