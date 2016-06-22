@@ -71,7 +71,7 @@ save('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
 
-%{
+%%
 figure
 hold on
 plot(rocx,rocy);
@@ -92,5 +92,5 @@ xlabel('Score Threshold for Class 3');
 ylabel('Rate');
 hold off
 
-%}
+
 

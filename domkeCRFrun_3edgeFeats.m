@@ -54,5 +54,5 @@ fprintf('training the model (this is slow!)...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 %p = train_crf(feats,[],labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_3edgeFeats_cliqueLoss_new2.mat','p','trialInds','trainingInds','validationInds');
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new3.mat','p','trialInds','trainingInds','validationInds');
 

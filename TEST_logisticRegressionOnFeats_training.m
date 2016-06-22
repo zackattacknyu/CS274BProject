@@ -32,7 +32,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p','trainingInds');
     obtainDataFromFiles3(trainingInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p','validationInds');
+%load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p','validationInds');
 %load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2','trialInds2');
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -40,7 +40,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p','validationInds');
     %xFiles12,yFiles12,ccsFiles12,xOneFiles12);
 
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
-    obtainDataFromFiles3(validationInds,...
+    obtainDataFromFiles3(trainingInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11);
 
 XdataTrain = [];
@@ -82,16 +82,16 @@ YHAT2 = YHAT(:,2);
 [rocx3,rocy3,rocThr3,rocAuc3] = perfcurve(YY2,YHAT2,1);
 [probDet3,falseAlarm2,thr3,auc3] = perfcurve(YY2,YHAT2,1,'XCrit','accu','YCrit','fpr');
 
-save('logisticRegressionTest_sep2011data_new2_validationInds.mat',...
+save('logisticRegressionTest_sep2011data_new2_trainingInds.mat',...
     'rocx3','rocy3','rocThr3','rocAuc3',...
     'probDet3','falseAlarm2','thr3','auc3');
 %%
 
-load('logisticRegressionTest_sep2011data_new2_validationInds.mat');
-
+load('logisticRegressionTest_sep2011data_new2_trainingInds.mat');
+load('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new2');
 figure
-    
-subplot(1,2,1);
+    %{
+subplot(1,3,1);
 hold on
 title('ROC curves');
 plot(rocx3,rocy3,'r-');
@@ -99,10 +99,42 @@ plot(rocx,rocy,'g-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
-legend('Logistic Regression ROC curve',...
-    'CRF ROC Curve','Baseline ROC');
+%legend('Logistic Regression ROC curve',...
+%    'CRF ROC Curve','Baseline ROC');
 hold off
 
+load('logisticRegressionTest_sep2011data_new2_validationInds.mat');
+load('ROCvars_sep2011_3edgeFeats_cliqueLoss_validationInds_new2');
+%}
+subplot(1,2,1);
+hold on
+title('Validation Data ROC Curve');
+plot(rocx3,rocy3,'r-');
+plot(rocx,rocy,'g-');
+plot(0:0.05:1,0:0.05:1,'b--');
+xlabel('False Positive Rate');
+ylabel('True Positive Rate');
+%legend('Logistic Regression ROC curve',...
+%    'CRF ROC Curve','Baseline ROC');
+hold off
+
+load('logisticRegressionTest_sep2012data_new2.mat');
+load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2');
+
+subplot(1,2,2);
+hold on
+title('Test Data ROC Curve');
+plot(rocx3,rocy3,'r-');
+plot(rocx,rocy,'g-');
+plot(0:0.05:1,0:0.05:1,'b--');
+xlabel('False Positive Rate');
+ylabel('True Positive Rate');
+legend('Logistic Regression',...
+    'CRF','Random Guessing','Location','eastoutside');
+hold off
+
+
+%{
 subplot(1,2,2);
 hold on
 title('Threshold versus Error Rates for Logistic Regression');
