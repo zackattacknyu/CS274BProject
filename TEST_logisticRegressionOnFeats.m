@@ -1,3 +1,42 @@
+sizr = 500;
+sizc = 750;
+rho = 0.5;
+nvals = 2;
+
+yFiles11 = dir('projectData/ytarget1109*');
+xFiles11 = dir('projectData/xdata1109*');
+ccsFiles11 = dir('projectData/ccspred1109*');
+xOneFiles11 = dir('projectData/xone1109*');
+
+yFiles12 = dir('projectData/ytarget1209*');
+xFiles12 = dir('projectData/xdata1209*');
+ccsFiles12 = dir('projectData/ccspred1209*');
+xOneFiles12 = dir('projectData/xone1209*');
+
+loss_spec = 'trunc_cl_trwpll_5';
+crf_type  = 'linear_linear';
+options.print_times = 0; % since this is so slow, print stuff to screen
+options.gradual     = 1; % use gradual fitting
+options.maxiter     = 1000;
+options.rho         = rho;
+options.reg         = 1e-4;
+options.opt_display = 0;
+
+
+load('domkeCRFrun_3edgeFeats','p');
+
+load('avgProbs_sep2011_trainingData','trialInds');
+
+[feats,efeats,labels,models,precipImages,ccsLabels,ccsYvalues] = ...
+    obtainDataFromFiles3(trialInds,...
+    xFiles11,yFiles11,ccsFiles11,xOneFiles11);
+
+load('avgProbs_sep2012_testData','trialInds2');
+
+[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
+    obtainDataFromFiles3(trialInds2,...
+    xFiles12,yFiles12,ccsFiles12,xOneFiles12);
+
 XdataTrain = [];
 YdataTrain = [];
 
@@ -15,7 +54,7 @@ for i = 1:length(feats_test)
     XdataTest = [XdataTest;feats_test{i}];
     YdataTest = [YdataTest;floor(labels_test{i}(:))];
 end
-%%
+
 testPixels = find(YdataTrain>1);
 
 %XX = Xdata(testPixels,1:13); %take out the two constant columns
@@ -27,7 +66,7 @@ bb = mnrfit(XX,YY);
 testPixels2 = find(YdataTest>1);
 XX2 = XdataTest(testPixels2,1);
 YY2 = categorical(YdataTest(testPixels2)-2);
-%%
+
 YHAT = mnrval(bb,XX2);
 
 
@@ -37,21 +76,11 @@ YHAT2 = YHAT(:,2);
 [rocx3,rocy3,rocThr3,rocAuc3] = perfcurve(YY2,YHAT2,1);
 [probDet3,falseAlarm2,thr3,auc3] = perfcurve(YY2,YHAT2,1,'XCrit','accu','YCrit','fpr');
 
-Yexp = YdataTrain(testPixels)-2;
-ff2 = fit(XX,Yexp,'exp1');
-
-[rocx2,rocy2,rocThr2,rocAuc2] = perfcurve(YY2,ff2(XX2),1);
-
-figure
-hold on
-plot(rocx3,rocy3,'r-');
-plot(rocx,rocy,'g-');
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('Logistic Regression ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
+save('logisticRegressionTest.mat','rocx3','rocy3','rocThr3','rocAuc3',...
+    'probDet3','falseAlarm2','thr3','auc3');
 %%
+
+load('logisticRegressionTest.mat');
 
 figure
     
@@ -59,10 +88,12 @@ subplot(1,2,1);
 hold on
 title('ROC curves');
 plot(rocx3,rocy3,'r-');
+plot(rocx,rocy,'g-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
-legend('Logistic Regression ROC curve','Baseline ROC');
+legend('Logistic Regression ROC curve',...
+    'CRF ROC Curve','Baseline ROC');
 hold off
 
 subplot(1,2,2);
@@ -79,6 +110,5 @@ hold off
 figure
 hold on
 plot(XX2,YHAT2,'r.')
-plot(XX2,ff2(XX2),'g.')
 plot(XX2,double(YY2)-1,'b.');
 hold off
