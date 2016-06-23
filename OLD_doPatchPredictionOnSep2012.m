@@ -45,7 +45,7 @@ options.opt_display = 0;
 
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -53,7 +53,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 4;
+numRandInds = 3;
 
 load('highestPrecipInds1209');
 trialInds2 = highestPrecipInds(1:numRandInds);
@@ -71,8 +71,6 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 40;
-minNumPixels = 10000; %min size to be considered patch
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -83,31 +81,22 @@ for n = 1:N
     load(strcat('projectData/',ccsFiles12(fileI).name))
     load(strcat('projectData/',xOneFiles12(fileI).name))
     
-    %blurs the image, then finds the nonzero pixels
-    %this way nearby cloud patches blur together
-    blurredSeg = conv2(double(seg),ones(filtSize,filtSize),'same');
-    components = bwconncomp(blurredSeg>0);
-    
-    for cloudNum = 1:length(components.PixelIdxList)
-        isCloud = zeros(size(seg));
-        isCloud(components.PixelIdxList{cloudNum})=1;
+    for cloudNum = 1:max(seg(:))
+        isCloud = double(seg==cloudNum);
+        vertCols = sum(isCloud,1);
+        horzCols = sum(isCloud,2);
+        minR = find(horzCols>0, 1 ,'first');
+        maxR = find(horzCols>0, 1, 'last');
+        minC = find(vertCols>0, 1, 'first');
+        maxC = find(vertCols>0, 1, 'last');
         
-        if(sum(isCloud(:)) > minNumPixels)
-            vertCols = sum(isCloud,1);
-            horzCols = sum(isCloud,2);
-            minR = find(horzCols>0, 1 ,'first');
-            maxR = find(horzCols>0, 1, 'last');
-            minC = find(vertCols>0, 1, 'first');
-            maxC = find(vertCols>0, 1, 'last');
-
-            x{patchInd} = xdata(minR:maxR,minC:maxC,:);
-            y{patchInd} = ytarget(minR:maxR,minC:maxC);
-            noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
-            ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
-            x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
-
-            patchInd = patchInd+1;
-        end
+        x{patchInd} = xdata(minR:maxR,minC:maxC,:);
+        y{patchInd} = ytarget(minR:maxR,minC:maxC);
+        noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
+        ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
+        x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
+        
+        patchInd = patchInd+1;
     end
     
     
@@ -160,12 +149,6 @@ for n = 1:lastInd
     labels{n} = getLabelsFromY(y{n},noLabelInds);
     models{n} = gridmodel(sizr,sizc,3);
     
-    %if(rand<0.3)
-       figure;
-       imagesc(labels{n}); 
-       colormap(jet)
-       colorbar;
-    %end
     
 end
 
@@ -175,6 +158,20 @@ for n=1:lastInd
     efeats{n} = edgeify_im3(x{n}(:,:,1),models{n}.pairs);
 end
 
+%%
+seg = segNums{2};
+%imagesc(seg); colorbar;
+
+cloud1 = double(seg==1);
+imagesc(cloud1);
+vertCols = sum(cloud1,1);
+horzCols = sum(cloud1,2);
+minR = find(horzCols>0, 1 ,'first');
+maxR = find(horzCols>0, 1, 'last');
+minC = find(vertCols>0, 1, 'first');
+maxC = find(vertCols>0, 1, 'last');
+
+imagesc(cloud1(minR:maxR,minC:maxC));
 %%
 fprintf('get the marginals for test images...\n');
 close all
