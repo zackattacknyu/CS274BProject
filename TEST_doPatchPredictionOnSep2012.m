@@ -53,9 +53,9 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 4;
+numRandInds = 10;
 
-load('highestPrecipInds1209');
+%load('highestPrecipInds1209');
 trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
@@ -71,8 +71,8 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 40;
-minNumPixels = 10000; %min size to be considered patch
+filtSize = 20;
+minNumPixels = 5000; %min size to be considered patch
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -88,6 +88,11 @@ for n = 1:N
     blurredSeg = conv2(double(seg),ones(filtSize,filtSize),'same');
     components = bwconncomp(blurredSeg>0);
     
+    cornerR = [];
+    cornerC = [];
+    sizR = [];
+    sizC = [];
+    
     for cloudNum = 1:length(components.PixelIdxList)
         isCloud = zeros(size(seg));
         isCloud(components.PixelIdxList{cloudNum})=1;
@@ -99,6 +104,11 @@ for n = 1:N
             maxR = find(horzCols>0, 1, 'last');
             minC = find(vertCols>0, 1, 'first');
             maxC = find(vertCols>0, 1, 'last');
+            
+            cornerR = [cornerR;minR];
+            cornerC = [cornerC;minC];
+            sizR = [sizR;(maxR-minR)];
+            sizC = [sizC;(maxC-minC)];
 
             x{patchInd} = xdata(minR:maxR,minC:maxC,:);
             y{patchInd} = ytarget(minR:maxR,minC:maxC);
@@ -110,6 +120,10 @@ for n = 1:N
         end
     end
     
+    figure
+    CURRENT_drawRegionPatches(ytarget,cornerR,cornerC,sizR,sizC);
+    pause(1);
+    drawnow;
     
     %x{n} = xdata;
     %y{n} = ytarget;
@@ -160,12 +174,12 @@ for n = 1:lastInd
     labels{n} = getLabelsFromY(y{n},noLabelInds);
     models{n} = gridmodel(sizr,sizc,3);
     
-    %if(rand<0.3)
+    if(rand<0.3)
        figure;
        imagesc(labels{n}); 
        colormap(jet)
        colorbar;
-    %end
+    end
     
 end
 
