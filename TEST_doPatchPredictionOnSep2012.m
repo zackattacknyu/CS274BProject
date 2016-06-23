@@ -53,11 +53,11 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 5;
+numRandInds = 3;
 
-%load('highestPrecipInds1209');
-%trialInds2 = highestPrecipInds(1:numRandInds);
-trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+load('highestPrecipInds1209');
+trialInds2 = highestPrecipInds(1:numRandInds);
+%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
