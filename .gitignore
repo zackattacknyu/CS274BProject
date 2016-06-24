@@ -50,3 +50,5 @@
 /ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new2.mat
 /ROCvars_sep2011_3edgeFeats_cliqueLoss_validationInds_new2.mat
 /ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat
+/ROCvars_sep2012_patchPred_new2testInds.mat
+/ROCvars_sep2012_patchPred_randInds1.mat

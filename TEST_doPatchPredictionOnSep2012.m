@@ -56,8 +56,10 @@ totalN2 = length(xFiles12);
 numRandInds = 10;
 
 %load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
+%trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
+
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -71,7 +73,7 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 20;
+filtSize = 10;
 minNumPixels = 5000; %min size to be considered patch
 
 for n = 1:N
@@ -120,11 +122,15 @@ for n = 1:N
         end
     end
     
+    %{
     figure
+    subplot(1,2,1)
+    CURRENT_drawRegionPatches(seg,cornerR,cornerC,sizR,sizC);
+    subplot(1,2,2)
     CURRENT_drawRegionPatches(ytarget,cornerR,cornerC,sizR,sizC);
     pause(1);
     drawnow;
-    
+    %}
     %x{n} = xdata;
     %y{n} = ytarget;
     %segNums{n} = seg;
@@ -173,14 +179,14 @@ for n = 1:lastInd
     ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
     labels{n} = getLabelsFromY(y{n},noLabelInds);
     models{n} = gridmodel(sizr,sizc,3);
-    
+    %{
     if(rand<0.3)
        figure;
        imagesc(labels{n}); 
        colormap(jet)
        colorbar;
     end
-    
+    %}
 end
 
 fprintf('computing edge features...\n')
@@ -198,6 +204,7 @@ Base = zeros(1,length(feats));
 CCS = zeros(1,length(feats));
 biArrays = cell(1,length(feats));
 for n=1:length(feats)
+    n
     [b_i b_ij] = eval_crf(p,feats{n},efeats{n},models{n},loss_spec,crf_type,rho);
 
     
@@ -207,23 +214,24 @@ for n=1:length(feats)
 end
 
 
-
+%%
 allCloudLabels = [];
 allCloudScores = [];
 
-for n = 1:length(trialInds2)
-    curTargetLabels = labels{n};
+for nn = 1:length(labels)
+    nn
+    curTargetLabels = labels{nn};
     cloudPixels = find(curTargetLabels>1);
     allCloudLabels = [allCloudLabels curTargetLabels(cloudPixels)'];
 
-    biCur = biArrays{n};
+    biCur = biArrays{nn};
     allCloudScores = [allCloudScores biCur(3,cloudPixels)];
 
 end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 %%
-save('ROCvars_sep2012_3edgeFeats_cliqueLoss_randInds_newP.mat',...
+save('ROCvars_sep2012_patchPred_new2testInds.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
 %%
