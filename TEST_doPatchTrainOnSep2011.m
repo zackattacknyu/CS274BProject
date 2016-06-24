@@ -45,8 +45,6 @@ options.opt_display = 0;
 
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
-%load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -59,8 +57,10 @@ numRandInds = 10;
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
+%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
 
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new2.mat','trainingInds');
+trialInds2 = trainingInds;
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -80,11 +80,11 @@ minNumPixels = 2000; %min size to be considered patch
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
     fileI = trialInds2(n);
-    load(strcat('projectData/',xFiles12(fileI).name))
-    load(strcat('projectData/',yFiles12(fileI).name))
-    load(strcat('projectData/',segFiles12(fileI).name));
-    load(strcat('projectData/',ccsFiles12(fileI).name))
-    load(strcat('projectData/',xOneFiles12(fileI).name))
+    load(strcat('projectData/',xFiles11(fileI).name))
+    load(strcat('projectData/',yFiles11(fileI).name))
+    load(strcat('projectData/',segFiles11(fileI).name));
+    load(strcat('projectData/',ccsFiles11(fileI).name))
+    load(strcat('projectData/',xOneFiles11(fileI).name))
     
     %blurs the image, then finds the nonzero pixels
     %this way nearby cloud patches blur together
@@ -132,12 +132,6 @@ for n = 1:N
     pause(1);
     drawnow;
     %}
-    %x{n} = xdata;
-    %y{n} = ytarget;
-    %segNums{n} = seg;
-    %noCloudIndices{n} = find(x{n}(:,:,1)<=0);
-    %ccsY{n} = ccspred;
-    %x{n}(:,:,1)=xone;
     
 end
 
@@ -196,8 +190,12 @@ for n=1:lastInd
     efeats{n} = edgeify_im3(x{n}(:,:,1),models{n}.pairs);
 end
 
-%%
-fprintf('get the marginals for test images...\n');
+fprintf('Training the Model...\n')
+p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
+
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
+
+fprintf('get the marginals for training images...\n');
 close all
 E = zeros(1,length(feats));
 T = zeros(1,length(feats));
@@ -214,8 +212,6 @@ for n=1:length(feats)
     
 end
 
-
-%%
 allCloudLabels = [];
 allCloudScores = [];
 
@@ -231,30 +227,11 @@ for nn = 1:length(labels)
 end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
-%%
-save('ROCvars_sep2012_new2PatchTrainP_testInds.mat',...
+
+save('ROCvars_sep2011_patchPred_new2_trainingInds.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
-%%
-figure
-hold on
-plot(rocx,rocy);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
 
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThr,rocy,'r-');
-plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-legend('True Positive','False Positive','Accuracy');
-xlabel('Score Threshold for Class 3');
-ylabel('Rate');
-hold off
 
 
 
