@@ -1,6 +1,7 @@
 load('logisticRegressionTest_sep2011data_new3_trainingInds.mat');
 load('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new3');
-patchTrain2 = load('ROCvars_sep2011_patchPred_new3_trainingInds');
+%patchTrain2 = load('ROCvars_sep2011_patchPred_new3_trainingInds');
+patchTrain2 = load('ROCvars_sep2011_new3PatchTrainP_trainingInds_wholeMap');
 figure
     %{
 subplot(1,3,1);

@@ -54,12 +54,12 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 3;
+numRandInds = 10;
 
-%load('highestPrecipInds1209');
-%trialInds2 = highestPrecipInds(1:numRandInds);
+load('highestPrecipInds1209');
+trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
+%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
 
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -221,7 +221,6 @@ for n=1:lastInd
     efeats{n} = edgeify_im3(x{n}(:,:,1),models{n}.pairs);
 end
 
-%%
 fprintf('get the marginals for test images...\n');
 close all
 E = zeros(1,length(feats));
@@ -262,6 +261,11 @@ for n = 1:N
    subplot(1,2,2);
    imagesc(wholeMapLabels{n}); colorbar;
    %}
+   threshForRain = 0.25;
+   x_pred = 3.*double(curProb3wholeMap>threshForRain);
+   %figure
+   displayTargetPred(x_pred,wholeMapLabels{n});
+   
    probRainfallWholeMap{n} = curProb3wholeMap;
 end
 
