@@ -40,7 +40,8 @@ options.opt_display = 0;
 
 
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat')
+%load('domkeCRFrun_3edgeFeats_cliqueLoss_new.mat')
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new3.mat','trainingInds','p');
 trialInds = trainingInds;
 %load('domkeCRFrun_3edgeFeats_emMNF','p');
 
@@ -81,7 +82,8 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2011_highestPrecipMaps_3edgeFeats_cliqueLoss_trainingInds.mat',...
+%save('ROCvars_sep2011_highestPrecipMaps_3edgeFeats_cliqueLoss_trainingInds.mat',...
+save('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new3',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc');
 %%
