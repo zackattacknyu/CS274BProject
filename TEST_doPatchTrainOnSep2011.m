@@ -59,7 +59,7 @@ numRandInds = 10;
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 %load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
 
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2.mat','trainingInds');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new3.mat','trainingInds');
 trialInds2 = trainingInds;
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -228,7 +228,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2011_patchPred_new2_trainingInds.mat',...
+save('ROCvars_sep2011_patchPred_new3_trainingInds.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
 

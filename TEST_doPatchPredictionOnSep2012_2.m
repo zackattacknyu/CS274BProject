@@ -46,7 +46,8 @@ options.opt_display = 0;
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
 %load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
+%load('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain_areaSampling','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -54,12 +55,12 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 10;
+numRandInds = 15;
 
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
-trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
+%trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
+load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
 
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -86,17 +87,26 @@ for n = 1:N
     load(strcat('projectData/',ccsFiles12(fileI).name))
     load(strcat('projectData/',xOneFiles12(fileI).name))
     
-    minDist = 60;
-    patchSize = 100;
+    minDist = 30;
+    patchSize = 40;
     maxTries = 2000;
     maxNumPatches = 40;
 
+    %[ targetPatches, randPatchesCornerCoord, patchSum ] = ...
+    %    getSampledPatches( ytarget, patchSize, minDist, maxNumPatches, maxTries );
+    
+    %add area channels
+    areaChannel = sum(xdata(:,:,4:6),3);
     [ targetPatches, randPatchesCornerCoord, patchSum ] = ...
-        getSampledPatches( ytarget, patchSize, minDist, maxNumPatches, maxTries );
-    figure
-    drawMapWithPatches( seg ,randPatchesCornerCoord, patchSize );
-    pause(1);
-    drawnow;
+        getSampledPatches( areaChannel, patchSize, minDist, maxNumPatches, maxTries );
+    %f = figure;
+    %subplot(1,2,1);
+    %drawMapWithPatches( areaChannel ,randPatchesCornerCoord, patchSize );
+    %subplot(1,2,2);
+    %drawMapWithPatches( ytarget ,randPatchesCornerCoord, patchSize );
+    %drawnow;
+    %pause(3);
+    %close(f);
     %blurs the image, then finds the nonzero pixels
     %this way nearby cloud patches blur together
     blurredSeg = conv2(double(seg),ones(filtSize,filtSize),'same');
@@ -107,31 +117,21 @@ for n = 1:N
     sizR = [];
     sizC = [];
     
-    for cloudNum = 1:length(components.PixelIdxList)
-        isCloud = zeros(size(seg));
-        isCloud(components.PixelIdxList{cloudNum})=1;
+    for cloudNum = 1:length(targetPatches)
+        centerR = randPatchesCornerCoord{cloudNum}(1);
+        centerC = randPatchesCornerCoord{cloudNum}(2);
+        minR = centerR - patchSize/2;
+        minC = centerC - patchSize/2;
+        maxR = centerR + patchSize/2;
+        maxC = centerC + patchSize/2;
         
-        if(sum(isCloud(:)) > minNumPixels)
-            vertCols = sum(isCloud,1);
-            horzCols = sum(isCloud,2);
-            minR = find(horzCols>0, 1 ,'first');
-            maxR = find(horzCols>0, 1, 'last');
-            minC = find(vertCols>0, 1, 'first');
-            maxC = find(vertCols>0, 1, 'last');
-            
-            cornerR = [cornerR;minR];
-            cornerC = [cornerC;minC];
-            sizR = [sizR;(maxR-minR)];
-            sizC = [sizC;(maxC-minC)];
+        x{patchInd} = xdata(minR:maxR,minC:maxC,:);
+        y{patchInd} = ytarget(minR:maxR,minC:maxC);
+        noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
+        ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
+        x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
 
-            x{patchInd} = xdata(minR:maxR,minC:maxC,:);
-            y{patchInd} = ytarget(minR:maxR,minC:maxC);
-            noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
-            ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
-            x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
-
-            patchInd = patchInd+1;
-        end
+        patchInd = patchInd+1;
     end
     
     %{
@@ -243,7 +243,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 %%
-save('ROCvars_sep2012_new2PatchTrainP_testInds.mat',...
+save('ROCvars_sep2012_new2PatchTrainAreaSampP_testInds_areaSampling.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
 %%

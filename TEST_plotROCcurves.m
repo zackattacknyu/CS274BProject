@@ -1,6 +1,6 @@
-load('logisticRegressionTest_sep2011data_new2_trainingInds.mat');
-load('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new2');
-patchTrain2 = load('ROCvars_sep2011_patchPred_new2_trainingInds');
+load('logisticRegressionTest_sep2011data_new3_trainingInds.mat');
+load('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new3');
+patchTrain2 = load('ROCvars_sep2011_patchPred_new3_trainingInds');
 figure
     %{
 subplot(1,3,1);
@@ -31,21 +31,29 @@ ylabel('True Positive Rate');
 %    'CRF ROC Curve','Baseline ROC');
 hold off
 
-load('logisticRegressionTest_sep2012data_new2.mat');
-load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2');
-patchTrain = load('ROCvars_sep2012_new2PatchTrainP_testInds.mat');
+load('logisticRegressionTest_sep2012data_new3.mat');
+load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3');
+patchTrain3 = load('ROCvars_sep2012_new3PatchTrainP_testInds.mat');
+patchTrainWhole = load('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat');
+%patchTrain2 = load('ROCvars_sep2012_new2PatchTrainP_testInds_areaSampling.mat');
+%patchTrain = load('ROCvars_sep2012_new2PatchTrainAreaSampP_testInds_areaSampling.mat');
+
 
 subplot(1,2,2);
 hold on
 title('Test Data ROC Curve');
 plot(rocx3,rocy3,'r-');
 plot(rocx,rocy,'g-');
-plot(patchTrain.rocx,patchTrain.rocy,'k-');
+plot(patchTrain3.rocx,patchTrain3.rocy,'k--');
+plot(patchTrainWhole.rocx,patchTrainWhole.rocy,'k-');
+%plot(patchTrain2.rocx,patchTrain2.rocy,'r--');
+%plot(patchTrain.rocx,patchTrain.rocy,'k-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
 legend('Logistic Regression',...
-    'CRF','CRF trained on patches','Random Guessing','Location','eastoutside');
+    'CRF','CRF trained and tested on patches',...
+    'Random Guessing','Location','eastoutside');
 hold off
 
 

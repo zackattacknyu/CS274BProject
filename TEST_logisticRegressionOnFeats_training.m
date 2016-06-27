@@ -24,7 +24,7 @@ options.opt_display = 0;
 
 
 %load('domkeCRFrun_3edgeFeats','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p','trainingInds');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new3','p','trainingInds');
 
 %load('avgProbs_sep2011_trainingData','trialInds');
 
@@ -82,6 +82,6 @@ YHAT2 = YHAT(:,2);
 [rocx3,rocy3,rocThr3,rocAuc3] = perfcurve(YY2,YHAT2,1);
 [probDet3,falseAlarm2,thr3,auc3] = perfcurve(YY2,YHAT2,1,'XCrit','accu','YCrit','fpr');
 
-save('logisticRegressionTest_sep2011data_new2_trainingInds.mat',...
+save('logisticRegressionTest_sep2011data_new3_trainingInds.mat',...
     'rocx3','rocy3','rocThr3','rocAuc3',...
     'probDet3','falseAlarm2','thr3','auc3');

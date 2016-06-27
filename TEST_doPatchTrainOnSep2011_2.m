@@ -7,7 +7,7 @@ sizc = 750;
 rho = 0.5;
 nvals = 2;
 
-addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
+%addpath(genpath('JustinsGraphicalModelsToolboxPublic'))
 
 yFiles11 = dir('projectData/ytarget1109*');
 xFiles11 = dir('projectData/xdata1109*');
@@ -45,8 +45,6 @@ options.opt_display = 0;
 
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
-%load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -54,13 +52,15 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 3;
+numRandInds = 10;
 
-load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
+%load('highestPrecipInds1209');
+%trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
+%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new2.mat','trialInds2');
 
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new2.mat','trainingInds');
+trialInds2 = trainingInds;
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -77,61 +77,47 @@ patchInd = 1;
 filtSize = 5;
 minNumPixels = 2000; %min size to be considered patch
 
-patchCoords = cell(1,N);
-
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
     fileI = trialInds2(n);
-    load(strcat('projectData/',xFiles12(fileI).name))
-    load(strcat('projectData/',yFiles12(fileI).name))
-    load(strcat('projectData/',segFiles12(fileI).name));
-    load(strcat('projectData/',ccsFiles12(fileI).name))
-    load(strcat('projectData/',xOneFiles12(fileI).name))
+    load(strcat('projectData/',xFiles11(fileI).name))
+    load(strcat('projectData/',yFiles11(fileI).name))
+    load(strcat('projectData/',segFiles11(fileI).name));
+    load(strcat('projectData/',ccsFiles11(fileI).name))
+    load(strcat('projectData/',xOneFiles11(fileI).name))
     
-    %blurs the image, then finds the nonzero pixels
-    %this way nearby cloud patches blur together
-    blurredSeg = conv2(double(seg),ones(filtSize,filtSize),'same');
-    components = bwconncomp(blurredSeg>0);
-    
-    cornerR = [];
-    cornerC = [];
-    sizR = [];
-    sizC = [];
-    
-    innerPatchInd = 0;
-    patchCoords{n} = cell(1,length(components.PixelIdxList));
-    
-    for cloudNum = 1:length(components.PixelIdxList)
-        isCloud = zeros(size(seg));
-        isCloud(components.PixelIdxList{cloudNum})=1;
-        
-        if(sum(isCloud(:)) > minNumPixels)
-            vertCols = sum(isCloud,1);
-            horzCols = sum(isCloud,2);
-            minR = find(horzCols>0, 1 ,'first');
-            maxR = find(horzCols>0, 1, 'last');
-            minC = find(vertCols>0, 1, 'first');
-            maxC = find(vertCols>0, 1, 'last');
-            
-            cornerR = [cornerR;minR];
-            cornerC = [cornerC;minC];
-            sizR = [sizR;(maxR-minR)];
-            sizC = [sizC;(maxC-minC)];
-            
-            innerPatchInd = innerPatchInd+1;
-            patchCoords{n}{innerPatchInd} = [minR maxR minC maxC];
-            
-            x{patchInd} = xdata(minR:maxR,minC:maxC,:);
-            y{patchInd} = ytarget(minR:maxR,minC:maxC);
-            noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
-            ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
-            x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
+    minDist = 30;
+    patchSize = 40;
+    maxTries = 2000;
+    maxNumPatches = 40;
 
-            patchInd = patchInd+1;
-        end
-    end
-    patchCoords{n} = patchCoords{n}(1:innerPatchInd);
+    %[ targetPatches, randPatchesCornerCoord, patchSum ] = ...
+    %    getSampledPatches( ytarget, patchSize, minDist, maxNumPatches, maxTries );
     
+    %add area channels
+    areaChannel = sum(xdata(:,:,4:6),3);
+    [ targetPatches, randPatchesCornerCoord, patchSum ] = ...
+        getSampledPatches( areaChannel, patchSize, minDist, maxNumPatches, maxTries );
+
+    
+    for cloudNum = 1:length(targetPatches)
+        centerR = randPatchesCornerCoord{cloudNum}(1);
+        centerC = randPatchesCornerCoord{cloudNum}(2);
+        minR = centerR - patchSize/2;
+        minC = centerC - patchSize/2;
+        maxR = centerR + patchSize/2;
+        maxC = centerC + patchSize/2;
+        
+        x{patchInd} = xdata(minR:maxR,minC:maxC,:);
+        y{patchInd} = ytarget(minR:maxR,minC:maxC);
+        noCloudIndices{patchInd} = find(x{patchInd}(:,:,1)<=0);
+        ccsY{patchInd} = ccspred(minR:maxR,minC:maxC);
+        x{patchInd}(:,:,1)=xone(minR:maxR,minC:maxC);
+
+        patchInd = patchInd+1;
+    end
+    
+    %{
     figure
     subplot(1,2,1)
     CURRENT_drawRegionPatches(seg,cornerR,cornerC,sizR,sizC);
@@ -139,13 +125,7 @@ for n = 1:N
     CURRENT_drawRegionPatches(ytarget,cornerR,cornerC,sizR,sizC);
     pause(1);
     drawnow;
-    
-    %x{n} = xdata;
-    %y{n} = ytarget;
-    %segNums{n} = seg;
-    %noCloudIndices{n} = find(x{n}(:,:,1)<=0);
-    %ccsY{n} = ccspred;
-    %x{n}(:,:,1)=xone;
+    %}
     
 end
 
@@ -204,8 +184,12 @@ for n=1:lastInd
     efeats{n} = edgeify_im3(x{n}(:,:,1),models{n}.pairs);
 end
 
-%%
-fprintf('get the marginals for test images...\n');
+fprintf('Training the Model...\n')
+p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
+
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain_areaSampling','p');
+
+fprintf('get the marginals for training images...\n');
 close all
 E = zeros(1,length(feats));
 T = zeros(1,length(feats));
@@ -215,32 +199,13 @@ biArrays = cell(1,length(feats));
 for n=1:length(feats)
     n
     [b_i b_ij] = eval_crf(p,feats{n},efeats{n},models{n},loss_spec,crf_type,rho);
+
+    
     biArrays{n} = b_i;
-end
-%%
-
-curPatchInd = 1;
-for n = 1:N
-   curProb3wholeMap = zeros(sizr,sizc);
-   for nn = 1:length(patchCoords{n})
-      coords = patchCoords{n}{nn};
-      minR = coords(1); maxR = coords(2); 
-      minC = coords(3); maxC = coords(4);
-      
-      curSizeR = maxR - minR + 1;
-      curSizeC = maxC - minC + 1;
-      
-      biCur = biArrays{curPatchInd};
-      curProb3wholeMap(minR:maxR,minC:maxC) = ...
-          reshape(biCur(3,:),curSizeR,curSizeC);
-      curPatchInd = curPatchInd+1;
-   end
-   figure
-   imagesc(curProb3wholeMap); colorbar;
+    
+    
 end
 
-
-%%
 allCloudLabels = [];
 allCloudScores = [];
 
@@ -256,30 +221,11 @@ for nn = 1:length(labels)
 end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
-%%
-save('ROCvars_sep2012_new3PatchTrainP_testInds.mat',...
+
+save('ROCvars_sep2011_patchPred_new2_trainingInds_areaSampling.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
-%%
-figure
-hold on
-plot(rocx,rocy);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
 
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThr,rocy,'r-');
-plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-legend('True Positive','False Positive','Accuracy');
-xlabel('Score Threshold for Class 3');
-ylabel('Rate');
-hold off
 
 
 
