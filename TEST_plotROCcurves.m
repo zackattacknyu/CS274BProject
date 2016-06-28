@@ -1,7 +1,7 @@
 load('logisticRegressionTest_sep2011data_new3_trainingInds.mat');
 load('ROCvars_sep2011_3edgeFeats_cliqueLoss_trainingInds_new3');
-%patchTrain2 = load('ROCvars_sep2011_patchPred_new3_trainingInds');
-patchTrain2 = load('ROCvars_sep2011_new3PatchTrainP_trainingInds_wholeMap');
+patchTrain2 = load('ROCvars_sep2011_patchPred_new3_trainingInds');
+%patchTrain2 = load('ROCvars_sep2011_new3PatchTrainP_trainingInds_wholeMap');
 figure
     %{
 subplot(1,3,1);
@@ -35,7 +35,7 @@ hold off
 load('logisticRegressionTest_sep2012data_new3.mat');
 load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3');
 patchTrain3 = load('ROCvars_sep2012_new3PatchTrainP_testInds.mat');
-patchTrainWhole = load('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat');
+%patchTrainWhole = load('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat');
 %patchTrain2 = load('ROCvars_sep2012_new2PatchTrainP_testInds_areaSampling.mat');
 %patchTrain = load('ROCvars_sep2012_new2PatchTrainAreaSampP_testInds_areaSampling.mat');
 
@@ -45,15 +45,18 @@ hold on
 title('Test Data ROC Curve');
 plot(rocx3,rocy3,'r-');
 plot(rocx,rocy,'g-');
-plot(patchTrain3.rocx,patchTrain3.rocy,'k--');
-plot(patchTrainWhole.rocx,patchTrainWhole.rocy,'k-');
+plot(patchTrain3.rocx,patchTrain3.rocy,'k-');
+%plot(patchTrainWhole.rocx,patchTrainWhole.rocy,'k-');
 %plot(patchTrain2.rocx,patchTrain2.rocy,'r--');
 %plot(patchTrain.rocx,patchTrain.rocy,'k-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
+%legend('Logistic Regression',...
+%    'CRF','CRF trained and tested on patches',...
+%    'Random Guessing','Location','eastoutside');
 legend('Logistic Regression',...
-    'CRF','CRF trained and tested on patches',...
+    'CRF','Patch-based CRF',...
     'Random Guessing','Location','eastoutside');
 hold off
 
