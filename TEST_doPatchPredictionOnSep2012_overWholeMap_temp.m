@@ -286,74 +286,14 @@ for nn = 1:length(wholeMapLabels)
 
 end
 
-noRainScores = 1-allCloudScores;
-[rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
-[probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
-[missRate,specRate,thr2,auc2] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','miss','YCrit','spec');
+numRainPixels = numel(find(allCloudLabels==3));
+numNoRainPixels = numel(find(allCloudLabels<3));
+numTotalCloudPixels = numel(allCloudLabels);
+save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_dataMini.mat',...
+    'numRainPixels','numNoRainPixels','numTotalCloudPixels');
+save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_data.mat',...
+    'allCloudLabels','allCloudScores','numRainPixels','numNoRainPixels','numTotalCloudPixels');
 
-[rocxNeg,rocyNeg,rocThrNeg,rocAucNeg] = perfcurve(allCloudLabels,noRainScores,2);
-[probDetNeg,falseAlarmNeg,thrNeg,aucNeg] = perfcurve(allCloudLabels,noRainScores,2,'XCrit','accu','YCrit','fpr');
-%%
-save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
-    'rocx','rocy','rocThr','rocAuc',...
-    'probDet','falseAlarm','thr','auc','trialInds2','missRate','specRate','thr2','auc2');
-
-save('ROCvarsNeg_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
-    'rocxNeg','rocyNeg','rocThrNeg','rocAucNeg',...
-    'probDetNeg','falseAlarmNeg','thrNeg','aucNeg','trialInds2');
-%%
-figure
-hold on
-plot(rocx,rocy);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
-%%
-
-accIfNoRain = numNoRainPixels/numTotalCloudPixels;
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThr,rocy,'r-');
-plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-plot(thr,accIfNoRain.*ones(1,numel(thr)),'k--');
-%plot(thr2,missRate,'g-');
-%plot(thr2,1-specRate,'b-');
-legend('True Positive','False Positive','Accuracy');
-%legend('Accuracy','Percent Precip Pixels Incorrect','Percent No Precip Incorrect');
-xlabel('Score Threshold for Class 3');
-ylabel('Rate');
-hold off
-%%
-
-figure
-hold on
-plot(1-missRate,1-specRate,'ko');
-hold off
-
-%%
-figure
-hold on
-plot(rocxNeg,rocyNeg);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False negative rate')
-ylabel('True negative rate')
-hold off
-
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThrNeg,rocyNeg,'r-');
-plot(rocThrNeg,rocxNeg,'b-');
-plot(thrNeg,probDetNeg,'k-');
-legend('True Negative','False Negative','Accuracy');
-xlabel('Score Threshold for Class 2');
-ylabel('Rate');
-hold off
 
 
 
