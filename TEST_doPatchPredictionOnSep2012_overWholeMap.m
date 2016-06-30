@@ -289,14 +289,14 @@ end
 noRainScores = 1-allCloudScores;
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
-[missRate,~,thr2,auc2] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','fnr','YCrit','fpr');
+[missRate,specRate,thr2,auc2] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','miss','YCrit','spec');
 
 [rocxNeg,rocyNeg,rocThrNeg,rocAucNeg] = perfcurve(allCloudLabels,noRainScores,2);
 [probDetNeg,falseAlarmNeg,thrNeg,aucNeg] = perfcurve(allCloudLabels,noRainScores,2,'XCrit','accu','YCrit','fpr');
 %%
 save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
     'rocx','rocy','rocThr','rocAuc',...
-    'probDet','falseAlarm','thr','auc','trialInds2','missRate','thr2','auc2');
+    'probDet','falseAlarm','thr','auc','trialInds2','missRate','specRate','thr2','auc2');
 
 save('ROCvarsNeg_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
     'rocxNeg','rocyNeg','rocThrNeg','rocAucNeg',...
@@ -316,13 +316,19 @@ hold on
 title('Threshold versus Error Rates for CRF model');
 %plot(rocThr,rocy,'r-');
 %plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-plot(thr2,missRate,'g-');
-plot(thr2,1-missRate,'b-');
+plot(thr,probDet,'kx');
+plot(thr2,missRate,'gx');
+plot(thr2,1-specRate,'bx');
 %legend('True Positive','False Positive','Accuracy');
-legend('Accuracy','Percent Precip Pixels Incorrect','Percent Precip Correct');
+legend('Accuracy','Percent Precip Pixels Incorrect','Percent No Precip Incorrect');
 xlabel('Score Threshold for Class 3');
 ylabel('Rate');
+hold off
+%%
+
+figure
+hold on
+plot(1-missRate,1-specRate,'ko');
 hold off
 
 %%
