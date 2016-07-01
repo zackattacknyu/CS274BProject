@@ -24,7 +24,7 @@ hold on
 title('Training Data ROC Curve');
 plot(rocx3,rocy3,'r-');
 plot(rocx,rocy,'g-');
-plot(patchTrain2.rocx,patchTrain2.rocy,'ko');
+plot(patchTrain2.rocx,patchTrain2.rocy,'k-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
@@ -32,7 +32,8 @@ ylabel('True Positive Rate');
 %    'CRF ROC Curve','Baseline ROC');
 hold off
 
-load('logisticRegressionTest_sep2012data_new3.mat');
+load('logisticRegressionTest_sep2012data_new3_inWindow.mat');
+%load('logisticRegressionTest_sep2012data_new3.mat');
 load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3');
 %patchTrain3 = load('ROCvars_sep2012_new3PatchTrainP_testInds.mat');
 patchTrainWhole = load('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat');
@@ -46,7 +47,7 @@ title('Test Data ROC Curve');
 plot(rocx3,rocy3,'r-');
 plot(rocx,rocy,'g-');
 %plot(patchTrain3.rocx,patchTrain3.rocy,'k-');
-plot(patchTrainWhole.rocx,patchTrainWhole.rocy,'ko');
+plot(patchTrainWhole.rocx,patchTrainWhole.rocy,'k-');
 %plot(patchTrain2.rocx,patchTrain2.rocy,'r--');
 %plot(patchTrain.rocx,patchTrain.rocy,'k-');
 plot(0:0.05:1,0:0.05:1,'b--');
