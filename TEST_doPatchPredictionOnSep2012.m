@@ -56,11 +56,11 @@ totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
 numRandInds = 3;
 
-load('highestPrecipInds1209');
-trialInds2 = highestPrecipInds(1:numRandInds);
+%load('highestPrecipInds1209');
+%trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
-
+load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
+trialInds2 = [524;583;587;601;1181]; %TEMP code
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -135,8 +135,10 @@ for n = 1:N
     figure
     subplot(1,2,1)
     CURRENT_drawRegionPatches(seg,cornerR,cornerC,sizR,sizC);
+    title('Cloud Patch Labels');
     subplot(1,2,2)
     CURRENT_drawRegionPatches(ytarget,cornerR,cornerC,sizR,sizC);
+    title('Target Precipitation Amounts');
     pause(1);
     drawnow;
     
