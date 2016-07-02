@@ -54,13 +54,13 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 3;
+numRandInds = 7;
 
-%load('highestPrecipInds1209');
-%trialInds2 = highestPrecipInds(1:numRandInds);
+load('highestPrecipInds1209');
+trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
-trialInds2 = [524;583;587;601;1181]; %TEMP code
+%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
+%trialInds2 = [524;583;587;601;1181]; %TEMP code
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -74,8 +74,12 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 5;
-minNumPixels = 2000; %min size to be considered patch
+%filtSize = 5;
+%minNumPixels = 2000; %min size to be considered patch
+
+%TEST PARAMS FOR NO PRE-FILTER PATCHES
+filtSize = 1;
+minNumPixels = 1000; %min size to be considered patch
 
 patchCoords = cell(1,N);
 
