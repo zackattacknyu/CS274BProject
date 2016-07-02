@@ -74,8 +74,13 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 5;
-minNumPixels = 2000; %min size to be considered patch
+
+%filtSize = 5;
+%minNumPixels = 2000; %min size to be considered patch
+
+%TEST PARAMS FOR NO PRE-FILTER PATCHES
+filtSize = 1;
+minNumPixels = 1000; %min size to be considered patch
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -193,7 +198,7 @@ end
 fprintf('Training the Model...\n')
 p = train_crf(feats,efeats,labels,models,loss_spec,crf_type,options)
 
-save('domkeCRFrun_3edgeFeats_cliqueLoss_new2_patchTrain','p');
+save('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain_unfilteredP','p');
 
 fprintf('get the marginals for training images...\n');
 close all
@@ -228,7 +233,7 @@ end
 [rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
 [probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
 
-save('ROCvars_sep2011_patchPred_new3_trainingInds.mat',...
+save('ROCvars_sep2011_patchPred_new3_trainingInds_unfilteredP.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2');
 

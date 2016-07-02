@@ -178,6 +178,14 @@ title('Size vs Percentage of Precip Pixels');
 xlabel('Number of Pixels in Patch');
 ylabel('Percentage of Precip Pixels');
 
+%%
+
+focusInds = find(sizePatch<5000);
+figure
+plot(sizePatch(focusInds),totalNumPrecipPatch(focusInds),'b.');
+
+figure
+plot(sizePatch(focusInds),totalPrecipPatch(focusInds),'r.');
 
 
 

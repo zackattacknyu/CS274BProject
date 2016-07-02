@@ -74,10 +74,14 @@ ccsY = cell(1,NN2);
 noCloudIndices = cell(1,NN2);
 segNums = cell(1,NN2);
 patchInd = 1;
-filtSize = 5;
-minNumPixels = 2000; %min size to be considered patch
+%filtSize = 5;
+%minNumPixels = 2000; %min size to be considered patch
 
 patchCoordsTrain = cell(1,N);
+
+%UNFILTERED SEG IMAGES
+filtSize = 1;
+minNumPixels = 1000; %min size to be considered patch
 
 for n = 1:N
     fprintf(strcat('Loading data for time ',num2str(n),' of ',num2str(N),'\n'));
@@ -146,7 +150,7 @@ for n = 1:N
     
 end
 
-save('ROCvars_sep2011_patchPred_new3_trainingInds_patchData.mat',...
+save('ROCvars_sep2011_patchPred_new3_trainingInds_patchData_unfilteredP.mat',...
     'patchCoordsTrain','trainingInds');
 
 
