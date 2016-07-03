@@ -46,7 +46,8 @@ options.opt_display = 0;
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
 %load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
+%load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain_unfilteredP','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -54,12 +55,13 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 10;
+numRandInds = 3;
 
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
+trialInds2 = [524;587;601;1181];
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
-load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
+%load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
 
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
@@ -158,9 +160,6 @@ x = x(1:lastInd);
 y = y(1:lastInd);
 noCloudIndices = noCloudIndices(1:lastInd);
 ccsY = ccsY(1:lastInd);
-%%
-
-
 
 %[highestAmounts,highestPrecipInds] = sort(curSum,'descend');
 
@@ -258,13 +257,15 @@ for n = 1:N
    figure
    subplot(1,2,1);
    imagesc(curProb3wholeMap); colorbar;
+   drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
    subplot(1,2,2);
    imagesc(wholeMapLabels{n}); colorbar;
+   drwvect([-130 25 -100 45],[500 750],'us_states_outl_ug.tmp','k')
    %}
-   threshForRain = 0.25;
+   threshForRain = 0.2;
    x_pred = 3.*double(curProb3wholeMap>threshForRain);
    %figure
-   %displayTargetPred(x_pred,wholeMapLabels{n});
+   displayTargetPredProb(x_pred,wholeMapLabels{n},curProb3wholeMap);
    
    probRainfallWholeMap{n} = curProb3wholeMap;
 end
@@ -294,11 +295,11 @@ noRainScores = 1-allCloudScores;
 [rocxNeg,rocyNeg,rocThrNeg,rocAucNeg] = perfcurve(allCloudLabels,noRainScores,2);
 [probDetNeg,falseAlarmNeg,thrNeg,aucNeg] = perfcurve(allCloudLabels,noRainScores,2,'XCrit','accu','YCrit','fpr');
 %%
-save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
+save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_unfilteredP.mat',...
     'rocx','rocy','rocThr','rocAuc',...
     'probDet','falseAlarm','thr','auc','trialInds2','missRate','specRate','thr2','auc2');
 
-save('ROCvarsNeg_sep2012_new3PatchTrainP_testInds_wholeMap.mat',...
+save('ROCvarsNeg_sep2012_new3PatchTrainP_testInds_wholeMap_unfilteredP.mat',...
     'rocxNeg','rocyNeg','rocThrNeg','rocAucNeg',...
     'probDetNeg','falseAlarmNeg','thrNeg','aucNeg','trialInds2');
 %%
@@ -312,17 +313,19 @@ ylabel('True positive rate')
 hold off
 %%
 
-accIfNoRain = numNoRainPixels/numTotalCloudPixels;
+%accIfNoRain = numNoRainPixels/numTotalCloudPixels;
 figure
 hold on
 title('Threshold versus Error Rates for CRF model');
 plot(rocThr,rocy,'r-');
 plot(rocThr,rocx,'b-');
 plot(thr,probDet,'k-');
-plot(thr,accIfNoRain.*ones(1,numel(thr)),'k--');
+plot(thr2,missRate,'r--');
+plot(thr2,specRate,'b--');
+%plot(thr,accIfNoRain.*ones(1,numel(thr)),'k--');
 %plot(thr2,missRate,'g-');
 %plot(thr2,1-specRate,'b-');
-legend('True Positive','False Positive','Accuracy');
+legend('True Positive','False Positive','Accuracy','Miss Rate','Specificity');
 %legend('Accuracy','Percent Precip Pixels Incorrect','Percent No Precip Incorrect');
 xlabel('Score Threshold for Class 3');
 ylabel('Rate');

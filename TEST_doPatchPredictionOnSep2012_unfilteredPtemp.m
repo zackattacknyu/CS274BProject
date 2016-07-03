@@ -46,8 +46,7 @@ options.opt_display = 0;
 %original clique loss
 %load('domkeCRFrun_3edgeFeats','p');
 %load('domkeCRFrun_3edgeFeats_cliqueLoss_new2','p');
-%load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
-load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain_unfilteredP','p');
+load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain','p');
 
 %em with back TRW
 %load('domkeCRFrun_3edgeFeats_emTRW','p');
@@ -55,13 +54,13 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3_patchTrain_unfilteredP','p');
 
 totalN2 = length(xFiles12);
 %trialInds = 1:totalN;
-numRandInds = 7;
+numRandInds = 10;
 
 %load('highestPrecipInds1209');
 %trialInds2 = highestPrecipInds(1:numRandInds);
 %trialInds2 = sort(unique(floor(rand(1,numRandInds)*totalN2)));
 load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3.mat','trialInds2');
-%trialInds2 = [524;583;587;601;1181]; %TEMP code
+
 
 %[feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
 %    obtainDataFromFiles3(trialInds2,...
@@ -82,6 +81,8 @@ patchInd = 1;
 filtSize = 1;
 minNumPixels = 1000; %min size to be considered patch
 
+wholeY = cell(1,N);
+noCloudIndicesWhole = cell(1,N);
 patchCoords = cell(1,N);
 
 for n = 1:N
@@ -105,6 +106,8 @@ for n = 1:N
     
     innerPatchInd = 0;
     patchCoords{n} = cell(1,length(components.PixelIdxList));
+    wholeY{n} = ytarget;
+    noCloudIndicesWhole{n} = find(x{n}(:,:,1)<=0);
     
     for cloudNum = 1:length(components.PixelIdxList)
         isCloud = zeros(size(seg));
@@ -140,10 +143,8 @@ for n = 1:N
     figure
     subplot(1,2,1)
     CURRENT_drawRegionPatches(seg,cornerR,cornerC,sizR,sizC);
-    title('Cloud Patch Labels');
     subplot(1,2,2)
     CURRENT_drawRegionPatches(ytarget,cornerR,cornerC,sizR,sizC);
-    title('Target Precipitation Amounts');
     pause(1);
     drawnow;
     %}
@@ -173,6 +174,7 @@ labels = cell(lastInd,1);
 models = cell(lastInd,1);
 precipImages = cell(lastInd,1);
 ccsLabels = cell(lastInd,1);
+wholeMapLabels = cell(N,1);
 
 for n = 1:lastInd
     fprintf(strcat('Making data for patch ',num2str(n),' of ',num2str(lastInd),'\n'));
@@ -194,6 +196,7 @@ for n = 1:lastInd
     
     ccsLabels{n} = getLabelsFromY(ccsY{n},noLabelInds);
     labels{n} = getLabelsFromY(y{n},noLabelInds);
+    
     models{n} = gridmodel(sizr,sizc,3);
     %{
     if(rand<0.3)
@@ -205,13 +208,23 @@ for n = 1:lastInd
     %}
 end
 
+for n = 1:N
+    fprintf(strcat('Making data for whole map ',num2str(n),' of ',num2str(N),'\n'));
+    
+    imageY = wholeY{n};
+    noRainfallReadInds = find(imageY<0);
+    noLabelInds = union(noRainfallReadInds,noCloudIndicesWhole{n});
+    
+    wholeMapLabels{n} = getLabelsFromY(wholeY{n},noLabelInds);
+    
+end
+
 fprintf('computing edge features...\n')
 efeats = cell(lastInd,1);
 for n=1:lastInd
     efeats{n} = edgeify_im3(x{n}(:,:,1),models{n}.pairs);
 end
 
-%%
 fprintf('get the marginals for test images...\n');
 close all
 E = zeros(1,length(feats));
@@ -226,7 +239,9 @@ for n=1:length(feats)
 end
 %%
 
+sizr = 500; sizc = 750;
 curPatchInd = 1;
+probRainfallWholeMap = cell(1,N);
 for n = 1:N
    curProb3wholeMap = zeros(sizr,sizc);
    for nn = 1:length(patchCoords{n})
@@ -242,52 +257,27 @@ for n = 1:N
           reshape(biCur(3,:),curSizeR,curSizeC);
       curPatchInd = curPatchInd+1;
    end
-   figure
-   imagesc(curProb3wholeMap); colorbar;
    
+   %{
+   figure
+   subplot(1,2,1);
+   imagesc(curProb3wholeMap); colorbar;
+   subplot(1,2,2);
+   imagesc(wholeMapLabels{n}); colorbar;
+   %}
+   threshForRain = 0.25;
+   x_pred = 3.*double(curProb3wholeMap>threshForRain);
+   %figure
+   %displayTargetPred(x_pred,wholeMapLabels{n});
+   
+   probRainfallWholeMap{n} = curProb3wholeMap;
 end
 
+save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_baselineData_unfilteredP.mat',...
+    'probRainfallWholeMap','patchCoords','trialInds2','wholeMapLabels');
 
-%%
-allCloudLabels = [];
-allCloudScores = [];
-
-for nn = 1:length(labels)
-    nn
-    curTargetLabels = labels{nn};
-    cloudPixels = find(curTargetLabels>1);
-    allCloudLabels = [allCloudLabels curTargetLabels(cloudPixels)'];
-
-    biCur = biArrays{nn};
-    allCloudScores = [allCloudScores biCur(3,cloudPixels)];
-
-end
-[rocx,rocy,rocThr,rocAuc] = perfcurve(allCloudLabels,allCloudScores,3);
-[probDet,falseAlarm,thr,auc] = perfcurve(allCloudLabels,allCloudScores,3,'XCrit','accu','YCrit','fpr');
-%%
-save('ROCvars_sep2012_new3PatchTrainP_testInds_unfilteredP.mat',...
-    'rocx','rocy','rocThr','rocAuc',...
-    'probDet','falseAlarm','thr','auc','trialInds2');
-%%
-figure
-hold on
-plot(rocx,rocy);
-plot(0:0.05:1,0:0.05:1,'b--');
-legend('ROC Curve','Baseline ROC');
-xlabel('False positive rate')
-ylabel('True positive rate')
-hold off
-
-figure
-hold on
-title('Threshold versus Error Rates for CRF model');
-plot(rocThr,rocy,'r-');
-plot(rocThr,rocx,'b-');
-plot(thr,probDet,'k-');
-legend('True Positive','False Positive','Accuracy');
-xlabel('Score Threshold for Class 3');
-ylabel('Rate');
-hold off
+save('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_baselineDataMini_unfilteredP.mat',...
+    'patchCoords','trialInds2');
 
 
 
