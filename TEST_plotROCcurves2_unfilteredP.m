@@ -19,6 +19,7 @@ if(useOnlyWindows)
     rocyDataTrain = {crfAndLogDataTrain.rocy3,crfAndLogDataTrain.rocy,patchCRFdataTrain.rocy};
 else
     LogData = load('logisticRegressionTest_sep2012data_new3.mat');
+	%LogData = load('ROCvars_sep2012_logRegPatched_testInds_wholeMap_unfilteredP.mat');
     crfdata = load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3');
     patchCRFdata = load('ROCvars_sep2012_new3PatchTrainP_testInds_wholeMap_unfilteredP.mat');
     rocxData = {LogData.rocx3,crfdata.rocx,patchCRFdata.rocx};
