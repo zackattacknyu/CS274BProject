@@ -4,13 +4,14 @@ If true, then all the methods are compared with the data that
     is contained inside each of the patches
 If false, whole map is compared
 %}
-useOnlyWindows = false;
+useOnlyWindows = true;
 
 if(useOnlyWindows)
     crfAndLogData = load('logRegressionAndCrfROCvars_sep2012data_new3_inWindow_unfilteredP.mat');
     patchCRFdata = load('ROCvars_sep2012_new3PatchTrainP_testInds_unfilteredP.mat');
     rocxData = {crfAndLogData.rocx3,crfAndLogData.rocx,patchCRFdata.rocx};
     rocyData = {crfAndLogData.rocy3,crfAndLogData.rocy,patchCRFdata.rocy};
+    ccsData = load('logRegressionAndCcsROCvars_sep2012data_new3_inWindow_unfilteredP');
     
     crfAndLogDataTrain = load('logRegressionAndCrfROCvars_sep2011data_new3_inWindow_unfilteredP.mat');
     patchCRFdataTrain = load('ROCvars_sep2011_patchPred_new3_trainingInds_unfilteredP.mat');
@@ -49,11 +50,12 @@ title('Test Data ROC Curve');
 plot(rocxData{1},rocyData{1},'r-');
 plot(rocxData{2},rocyData{2},'g-');
 plot(rocxData{3},rocyData{3},'k-');
+%plot(ccsData.rocx,ccsData.rocy,'b-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
 legend('Logistic Regression',...
-    'CRF','Patch-based CRF',...
+    'CRF','Patch-based CRF','CCS Data',...
     'Random Guessing','Location','eastoutside');
 hold off
 
