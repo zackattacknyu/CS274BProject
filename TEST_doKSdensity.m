@@ -42,6 +42,11 @@ end
 
 testPixels2 = find(YdataTest>1);
 
+f3arrays = cell(1,13);
+f2arrays = cell(1,13);
+xi3arrays = cell(1,13);
+xi2arrays = cell(1,13);
+
 for feat = 1:13
     XX2 = XdataTest(testPixels2,feat);
     YY2 = YdataTest(testPixels2)-2;
@@ -55,12 +60,22 @@ for feat = 1:13
     [f3,xi3] = ksdensity(tempValsPrecip);
     [f2,xi2] = ksdensity(tempValsNoPrecip);
 
-    figure
-    hold on
-    plot(xi2,f2,'g-');
-    plot(xi3,f3,'r-');
-    legend('No Precip Inds','Precip Inds');
-    hold off
+    f3arrays{feat} = f3;
+    f2arrays{feat} = f2;
+    xi3arrays{feat} = xi3;
+    xi2arrays{feat} = xi2;
 
 end
 
+%save('KSdensityVars_sep2012_new3inds.mat','f3arrays','f2arrays','xi3arrays','xi2arrays');
+
+%load('KSdensityVars_sep2012_new3inds')
+
+for feat=1:13
+    figure
+    hold on
+    plot(xi2arrays{feat},f2arrays{feat},'g-');
+    plot(xi3arrays{feat},f3arrays{feat},'r-');
+    legend('No Precip Inds','Precip Inds');
+    hold off 
+end
