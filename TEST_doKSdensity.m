@@ -70,7 +70,7 @@ end
 %save('KSdensityVars_sep2012_new3inds.mat','f3arrays','f2arrays','xi3arrays','xi2arrays');
 
 %load('KSdensityVars_sep2012_new3inds')
-
+%%
 for feat=1:13
     figure
     hold on
