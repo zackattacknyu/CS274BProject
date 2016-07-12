@@ -107,14 +107,18 @@ for feat = 1:13
 end
 %%
 for feat = 2:13
+    displayData = [precipDensUnNorm{feat} noPrecipDensUnNorm{feat}];
+    allDispData = displayData(:);
+    clims = [min(allDispData) max(allDispData)];
+    
    figure
    subplot(1,2,1)
-   imagesc(precipDensUnNorm{feat}); 
+   imagesc(precipDensUnNorm{feat},clims); 
    colormap jet;
    colorbar;
    
    subplot(1,2,2)
-   imagesc(noPrecipDensUnNorm{feat});
+   imagesc(noPrecipDensUnNorm{feat},clims);
    colormap jet;
    colorbar;
 end
