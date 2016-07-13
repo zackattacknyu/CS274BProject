@@ -112,13 +112,15 @@ for feat = 2:13
     clims = [min(allDispData) max(allDispData)];
     
    figure
-   subplot(1,2,1)
+   subplot(2,1,1)
    imagesc(precipDensUnNorm{feat},clims); 
    colormap jet;
    colorbar;
+   axis off
    
-   subplot(1,2,2)
+   subplot(2,1,2)
    imagesc(noPrecipDensUnNorm{feat},clims);
    colormap jet;
    colorbar;
+   axis off
 end
