@@ -30,7 +30,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3','p','trainingInds');
 
 %load('avgProbs_sep2011_trainingData','trialInds');
 
-trainingInds = trainingInds(1:5);
+%trainingInds = trainingInds(1:5);
 [feats,efeats,labels,models,precipImages,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3_add2col(trainingInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11,segFiles11);
@@ -38,7 +38,7 @@ trainingInds = trainingInds(1:5);
 %load('domkeCRFrun_3edgeFeats_cliqueLoss_new3','p','validationInds');
 load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3','trialInds2');
 
-trialInds2 = trialInds2(1:5);
+%trialInds2 = trialInds2(1:5);
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3_add2col(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12,segFiles12);
@@ -72,50 +72,53 @@ end
 testPixels = find(YdataTrain>1);
 %%
 XX = XdataTrain(testPixels,[1:13 16:17]); %take out the two constant columns
+XXfeat1 = XdataTrain(testPixels,1);
 %XX = XdataTrain(testPixels,1); %take out the two constant columns
 YY = categorical(YdataTrain(testPixels)-2);
 YYraw = YtrainRaw(testPixels);
 
 bb = mnrfit(XX,YY);
 bbwo = fitcdiscr(XX,YY);
-bbLinReg = polyfit(XX,YYraw,1);
+bbLinReg = polyfit(XXfeat1,YYraw,1);
 
 testPixels2 = find(YdataTest>1);
 XX2 = XdataTest(testPixels2,[1:13 16:17]);
+XX2feat1 = XdataTest(testPixels2,1);
 YY2 = categorical(YdataTest(testPixels2)-2);
 YY2raw = YtestRaw(testPixels2);
-
 YHAT = mnrval(bb,XX2);
-YHATwo = predict(bbwo,XX2);
-YHATlinreg = polyval(bbLinReg,XX2);
-
+%%
+[YHATwo,YHATwoScore] = predict(bbwo,XX2);
+YHATlinreg = polyval(bbLinReg,XX2feat1);
 
 YHAT1 = YHAT(:,1);
 YHAT2 = YHAT(:,2);
 
-YHAT1wo = YHATwo(:,1);
-YHAT2wo = YHATwo(:,2);
-
-[rocx4,rocy4,rocThr4,rocAuc4] = perfcurve(YY2,YHATlinreg,1);
-[probDet4,falseAlarm4,thr4,auc4] = perfcurve(YY2,YHATlinreg,1,'XCrit','accu','YCrit','fpr');
+YHATwoScore2 = YHATwoScore(:,2);
 
 [rocx3,rocy3,rocThr3,rocAuc3] = perfcurve(YY2,YHAT2,1);
 [probDet3,falseAlarm3,thr3,auc3] = perfcurve(YY2,YHAT2,1,'XCrit','accu','YCrit','fpr');
 
-[rocx2,rocy2,rocThr2,rocAuc2] = perfcurve(YY2,YHAT2wo,1);
-[probDet2,falseAlarm2,thr2,auc2] = perfcurve(YY2,YHAT2wo,1,'XCrit','accu','YCrit','fpr');
+[rocx2,rocy2,rocThr2,rocAuc2] = perfcurve(YY2,YHATwoScore2,1);
+[probDet2,falseAlarm2,thr2,auc2] = perfcurve(YY2,YHATwoScore2,1,'XCrit','accu','YCrit','fpr');
+
+[rocx4,rocy4,rocThr4,rocAuc4] = perfcurve(YY2,YHATlinreg,1);
+[probDet4,falseAlarm4,thr4,auc4] = perfcurve(YY2,YHATlinreg,1,'XCrit','accu','YCrit','fpr');
+
 
 %%
 %save('logisticRegressionTest_sep2011data_new2_validationInds.mat',...
-save('logisticRegressionTest_sep2012data_new3_with2Extra.mat',...
+save('logisticRegressionTest_sep2012data_new3_logisticAndLinear.mat',...
     'rocx3','rocy3','rocThr3','rocAuc3',...
     'probDet3','falseAlarm3','thr3','auc3',...
     'rocx2','rocy2','rocThr2','rocAuc2',...
-    'probDet2','falseAlarm2','thr2','auc2');
+    'probDet2','falseAlarm2','thr2','auc2',...
+    'rocx4','rocy4','rocThr4','rocAuc4',...
+    'probDet4','falseAlarm4','thr4','auc4');
 %%
 
-load('logisticRegressionTest_sep2012data_new3_with2Extra.mat');
-%%
+load('logisticRegressionTest_sep2012data_new3_logisticAndLinear.mat');
+%RESULT: NO DIFFERENCE AMONG THE DIFFERENT METHODS
 figure
     
 subplot(1,2,1);
@@ -128,15 +131,16 @@ plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
 legend('Linear Classification ROC curve','Logistic Regression ROC curve',...
+    'ROC Curve using Linear Regression',...
     'Baseline ROC');
 hold off
 
 subplot(1,2,2);
 hold on
 title('Threshold versus Error Rates for Logistic Regression');
-plot(rocThr3,rocy3,'r-');
-plot(rocThr3,rocx3,'b-');
-plot(thr3,probDet3,'k-');
+plot(rocThr4,rocy4,'r-');
+plot(rocThr4,rocx4,'b-');
+plot(thr4,probDet4,'k-');
 legend('True Positive','False Positive','Accuracy');
 xlabel('Score Threshold for Rainfall');
 ylabel('Rate');

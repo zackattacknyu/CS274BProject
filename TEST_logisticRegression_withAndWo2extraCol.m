@@ -30,7 +30,7 @@ load('domkeCRFrun_3edgeFeats_cliqueLoss_new3','p','trainingInds');
 
 %load('avgProbs_sep2011_trainingData','trialInds');
 
-trainingInds = trainingInds(1:5);
+%trainingInds = trainingInds(1:5);
 [feats,efeats,labels,models,precipImages,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3_add2col(trainingInds,...
     xFiles11,yFiles11,ccsFiles11,xOneFiles11,segFiles11);
@@ -38,7 +38,7 @@ trainingInds = trainingInds(1:5);
 %load('domkeCRFrun_3edgeFeats_cliqueLoss_new3','p','validationInds');
 load('ROCvars_sep2012_3edgeFeats_cliqueLoss_testInds_new3','trialInds2');
 
-trialInds2 = trialInds2(1:5);
+%trialInds2 = trialInds2(1:5);
 [feats_test,efeats_test,labels_test,models_test,precipImages_test,ccsLabels,ccsYvalues] = ...
     obtainDataFromFiles3_add2col(trialInds2,...
     xFiles12,yFiles12,ccsFiles12,xOneFiles12,segFiles12);
@@ -69,19 +69,23 @@ testPixels = find(YdataTrain>1);
 %%
 XX = XdataTrain(testPixels,[1:13 16:17]); %take out the two constant columns
 XXwo = XdataTrain(testPixels,[1 16]);
-%XX = XdataTrain(testPixels,1); %take out the two constant columns
+XXwo2 = XdataTrain(testPixels,1);
 YY = categorical(YdataTrain(testPixels)-2);
 
 bb = mnrfit(XX,YY);
 bbwo = mnrfit(XXwo,YY);
+bbwo2 = mnrfit(XXwo2,YY);
 
 testPixels2 = find(YdataTest>1);
 XX2 = XdataTest(testPixels2,[1:13 16:17]);
 XX2wo = XdataTest(testPixels2,[1 16]);
+XX2wo2 = XdataTest(testPixels2,1);
 YY2 = categorical(YdataTest(testPixels2)-2);
 
 YHAT = mnrval(bb,XX2);
 YHATwo = mnrval(bbwo,XX2wo);
+
+YHATwo2 = mnrval(bbwo2,XX2wo2);
 
 
 YHAT1 = YHAT(:,1);
@@ -90,23 +94,31 @@ YHAT2 = YHAT(:,2);
 YHAT1wo = YHATwo(:,1);
 YHAT2wo = YHATwo(:,2);
 
+YHAT2wo2 = YHATwo2(:,2);
+
 [rocx3,rocy3,rocThr3,rocAuc3] = perfcurve(YY2,YHAT2,1);
 [probDet3,falseAlarm3,thr3,auc3] = perfcurve(YY2,YHAT2,1,'XCrit','accu','YCrit','fpr');
 
 [rocx2,rocy2,rocThr2,rocAuc2] = perfcurve(YY2,YHAT2wo,1);
 [probDet2,falseAlarm2,thr2,auc2] = perfcurve(YY2,YHAT2wo,1,'XCrit','accu','YCrit','fpr');
 
+[rocx4,rocy4,rocThr4,rocAuc4] = perfcurve(YY2,YHAT2wo2,1);
+[probDet4,falseAlarm4,thr4,auc4] = perfcurve(YY2,YHAT2wo2,1,'XCrit','accu','YCrit','fpr');
 %%
 %save('logisticRegressionTest_sep2011data_new2_validationInds.mat',...
-save('logisticRegressionTest_sep2012data_new3_with2Extra.mat',...
+save('logisticRegressionTest_sep2012data_new3_withAndWoOther2.mat',...
     'rocx3','rocy3','rocThr3','rocAuc3',...
     'probDet3','falseAlarm3','thr3','auc3',...
     'rocx2','rocy2','rocThr2','rocAuc2',...
-    'probDet2','falseAlarm2','thr2','auc2');
+    'probDet2','falseAlarm2','thr2','auc2',...
+    'rocx4','rocy4','rocThr4','rocAuc4',...
+    'probDet4','falseAlarm4','thr4','auc4');
 %%
 
-load('logisticRegressionTest_sep2012data_new3_with2Extra.mat');
-%%
+load('logisticRegressionTest_sep2012data_new3_withAndWoOther2.mat');
+
+%RESULT: NEARLY NO DIFFERENCE BETWEEN THE ROC CURVES
+%        THUS OTHER CLOUD PATCH FEATURES MAKE NEARLY NO DIFFERENCE
 figure
     
 subplot(1,2,1);
@@ -114,10 +126,12 @@ hold on
 title('ROC curves');
 plot(rocx2,rocy2,'g-');
 plot(rocx3,rocy3,'r-');
+plot(rocx4,rocy4,'K-');
 plot(0:0.05:1,0:0.05:1,'b--');
 xlabel('False Positive Rate');
 ylabel('True Positive Rate');
-legend('Logistic Regression ROC curve','Logistic Regression with new features',...
+legend('Logistic Regression with only temp and new feature',...
+    'Logistic Regression with all features','Logistic Regression with only temp',...
     'Baseline ROC');
 hold off
 
